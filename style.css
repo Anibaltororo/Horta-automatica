@@ -1,0 +1,111 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f9f4;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+header {
+  background: #37773a;
+  color: rgb(255, 255, 255);
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  color: rgb(255, 255, 255);
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.intro, .dashboard {
+  padding: 20px;
+  text-align: center;
+}
+
+.card {
+  background: rgb(255, 254, 254);
+  padding: 15px;
+  margin: 10px auto;
+  width: 250px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 18px;
+}
+/* ---- MENU SUPERIOR ---- */
+header {
+  background-color: #2e7d32;
+  color: white;
+  padding: 10px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+nav {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav h1 {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+nav ul li a:hover {
+  text-decoration: underline;
+}
+/* ---- MENU SUPERIOR ---- */
+header {
+  background-color: #2e7d32;
+  color: white;
+  padding: 10px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+nav {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav h1 {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+nav ul li a:hover {
+  text-decoration: underline;
+}
+

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Horta Escolar Automatizada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+  <nav>
+    <h1>Horta Automatizada Escolar</h1>
+    <ul>
+      <li><a href="index.html">Início</a></li>
+      <li><a href="sobre.html">Sobre</a></li>
+      <li><a href="acessibilidade.html">Acessibilidade</a></li>
+    </ul>
+  </nav>
+</header>
+
+  <header>
+    <h1>🌱 Horta Escolar Automatizada</h1>
+    <nav>
+      <a href="#">Início</a>
+      <a href="#">Dashboard</a>
+      <a href="#">Sobre</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h2>Bem-vindo!</h2>
+      <p>Este site foi desenvolvido para acompanhar a horta escolar automatizada, 
+      trazendo acessibilidade a alunos e professores no monitoramento dos dados.</p>
+    </section>
+
+
+    <section class="dashboard">
+      <h2>📊 Monitoramento em Tempo Real</h2>
+      <div class="card">🌡️ Temperatura: <span id="temp">--</span> °C</div>
+      <div class="card">💧 Umidade do Solo: <span id="umid">--</span> %</div>
+      <div class="card">☀️ Luminosidade: <span id="luz">--</span> lx</div>
+      <canvas id="graficoHorta" width="400" height="200"></canvas>
+
+    </section>
+  </main>
+
+  <footer>
+    <p>Projeto TCC - CEMI Cruzeiro - 2025</p>
+  </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
