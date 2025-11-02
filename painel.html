@@ -2,51 +2,67 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Horta Escolar Automatizada</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #1b5e20, #4caf50);
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2e7d32;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      margin-top: 40px;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px auto;
+      width: 300px;
+      text-align: left;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #c8e6c9;
+    }
+  </style>
 </head>
 <body>
-  <header>
-  <nav>
-    <h1>Horta Automatizada Escolar</h1>
-    <ul>
-      <li><a href="index.html">Início</a></li>
-      <li><a href="sobre.html">Sobre</a></li>
-      <li><a href="acessibilidade.html">Acessibilidade</a></li>
-    </ul>
-  </nav>
-</header>
+  <header>🌱 Horta Escolar Automatizada</header>
 
-  <header>
-    <h1>🌱 Horta Escolar Automatizada</h1>
-    <nav>
-      <a href="#">Início</a>
-      <a href="#">Dashboard</a>
-      <a href="#">Sobre</a>
-    </nav>
-  </header>
+  <div class="container">
+    <h2>Monitoramento em Tempo Real</h2>
 
-  <main>
-    <section class="intro">
-      <h2>Bem-vindo!</h2>
-      <p>Este site foi desenvolvido para acompanhar a horta escolar automatizada, 
-      trazendo acessibilidade a alunos e professores no monitoramento dos dados.</p>
-    </section>
+    <div class="card">
+      <span class="label">🌡️ Temperatura:</span>
+      <span id="temperatura">-- °C</span>
+    </div>
 
+    <div class="card">
+      <span class="label">💧 Umidade do Solo:</span>
+      <span id="umidade">-- %</span>
+    </div>
 
-    <section class="dashboard">
-      <h2>📊 Monitoramento em Tempo Real</h2>
-      <div class="card">🌡️ Temperatura: <span id="temperatura">--</span> °C</div>
-      <div class="card">💧 Umidade do Solo: <span id="umidade">--</span> %</div>
-      <div class="card">☀️ Luminosidade: <span id="luminosidade">--</span> lx</div>
-      <canvas id="graficoHorta" width="400" height="200"></canvas>
+    <div class="card">
+      <span class="label">☀️ Luminosidade:</span>
+      <span id="luminosidade">-- lx</span>
+    </div>
+  </div>
 
-    </section>
-  </main>
-
-  <footer>
-    <p>Projeto TCC - CEMI Cruzeiro - 2025</p>
-  </footer>
+  <!-- Importar o script principal -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
