@@ -100,6 +100,13 @@ window.login = function () {
             document.getElementById("erro").innerText = "E-mail ou senha inválidos!";
         });
 };
+<form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+    <button type="submit">Entrar</button>
+</form>
+
+<script type="module" src="login.js"></script>
 
 </script>
 
