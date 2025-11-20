@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login – Horta Automatizada</title>
+
+<style>
+    body { 
+        font-family: Arial; 
+        background: linear-gradient(45deg, green, white); 
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .box {
+        background: rgba(0,0,0,0.8);
+        padding: 40px;
+        border-radius: 10px;
+        color: white;
+        width: 350px;
+        text-align: center;
+    }
+
+    input, button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+    }
+
+    button {
+        background: dodgerblue;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: deepskyblue;
+    }
+</style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h2>Horta Automatizada</h2>
+        <p>Faça login para acessar</p>
+
+        <input id="email" type="email" placeholder="E-mail" />
+        <input id="senha" type="password" placeholder="Senha" />
+        <button onclick="login()">Entrar</button>
+
+        <p id="erro" style="color: red; margin-top: 10px;"></p>
+    </div>
+
+<script type="module">
+
+// Firebase (CDN)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+// CONFIGURAÇÃO DO FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+    authDomain: "horta-automatica.firebaseapp.com",
+    projectId: "horta-automatica",
+    storageBucket: "horta-automatica.firebasestorage.app",
+    messagingSenderId: "177154489173",
+    appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+};
+
+// inicializa app + auth
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// FUNÇÃO PARA LOGAR
+window.login = function () {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+
+    signInWithEmailAndPassword(auth, email, senha)
+        .then((userCredential) => {
+            const usuario = userCredential.user;
+
+            // SE FOR PROF → vai pro painel admin
+            if (email.includes("prof")) {
+                window.location.href = "professor.html";
+            } 
+            // SE FOR ALUNO → vai pra área do aluno
+            else {
+                window.location.href = "aluno.html";
+            }
+        })
+        .catch((error) => {
+            document.getElementById("erro").innerText = "E-mail ou senha inválidos!";
+        });
+};
+
+</script>
+
+</body>
+</html>
