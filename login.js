@@ -29,22 +29,22 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         const snap = await getDoc(docRef);
 
         if (!snap.exists()) {
-            alert("Erro: usuário sem role no Firestore.");
+            alert("Erro: Usuário não tem role definida no Firestore.");
             return;
         }
 
         const role = snap.data().role;
 
         if (role === "professor") {
-            window.location.href = "painel.html"; 
+            window.location.href = "painel.html";
         } else if (role === "aluno") {
-            window.location.href = "aluno.html"; 
+            window.location.href = "aluno.html";
         } else {
-            alert("Erro: role desconhecido.");
+            alert("Erro: Role desconhecida.");
         }
 
     } catch (error) {
-        console.error("Login falhou:", error);
+        console.error("Erro no login:", error);
         alert("Email ou senha incorretos.");
     }
 });
