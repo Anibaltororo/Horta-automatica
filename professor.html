@@ -1,78 +1,25 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Painel do Professor</title>
-<h1>Painel do Professor</h1>
-<p>Aqui será o painel administrativo.</p>
-<style>
-body {
-    font-family: Arial;
-    background: #fffbe8;
-    padding: 20px;
-}
-.box {
-    max-width: 800px;
-    margin: auto;
-}
-.item {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 12px;
-    border-left: 5px solid #c59e00;
-    box-shadow: 0 0 6px rgba(0,0,0,0.1);
-}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel do Professor - Horta</title>
 </head>
+<body style="max-width:1000px;margin:20px auto;padding:10px">
+  <h1>Painel do Professor 👨‍🏫</h1>
 
-<body>
+  <section style="margin-bottom:20px">
+    <h2>Enviar aviso</h2>
+    <input id="tituloAviso" placeholder="Título">
+    <textarea id="msgAviso" placeholder="Mensagem"></textarea>
+    <button id="btnAviso">Publicar Aviso</button>
+  </section>
 
-<div class="box">
-    <h2>Painel do Professor 👨‍🏫</h2>
-    <p>Aqui estão todos os registros feitos pelos alunos:</p>
-
+  <section>
+    <h2>Feedbacks</h2>
     <div id="conteudo"></div>
-</div>
+  </section>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
-  authDomain: "horta-automatica.firebaseapp.com",
-  projectId: "horta-automatica",
-  storageBucket: "horta-automatica.firebasestorage.app",
-  messagingSenderId: "177154489173",
-  appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 🔥 MOSTRAR FEEDBACKS DOS ALUNOS
-async function carregar() {
-    const div = document.getElementById("conteudo");
-    div.innerHTML = "";
-
-    const snap = await getDocs(collection(db, "feedbacks"));
-
-    snap.forEach((doc) => {
-        const f = doc.data();
-        div.innerHTML += `
-            <div class="item">
-                <b>${f.turma}</b> — ${f.data}<br>
-                <b>Função:</b> ${f.funcao}<br>
-                <b>Atividade:</b> ${f.feedback}
-            </div>
-        `;
-    });
-}
-
-carregar();
-</script>
-
+  <script type="module" src="professor.js"></script>
 </body>
 </html>

@@ -1,127 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Área do Aluno</title>
-<h1>Bem-vindo, aluno!</h1>
-<p>Aqui vai ficar o painel de feedback da turma.</p>
-
-<style>
-body {
-    font-family: Arial;
-    background: #e8ffe8;
-    padding: 20px;
-}
-.caixa {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 600px;
-    margin: auto;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-}
-input, textarea, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 8px;
-    border: 1px solid #aaa;
-    font-size: 16px;
-}
-button {
-    background: green;
-    color: white;
-    cursor: pointer;
-}
-button:hover {
-    background: darkgreen;
-}
-.registro {
-    background: #f1fff1;
-    padding: 10px;
-    border-left: 4px solid green;
-    margin-top: 10px;
-    border-radius: 6px;
-}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Área do Aluno - Horta</title>
+<link rel="stylesheet" href="style.css"> <!-- opcional -->
 </head>
-
 <body>
+  <main style="max-width:800px;margin:20px auto;padding:10px">
+    <h1>Área do Aluno 🌱</h1>
 
-<div class="caixa">
-    <h2>Área do Aluno 🌱</h2>
-    <p>Escreva o que sua turma fez hoje na horta:</p>
+    <section class="caixa" style="margin-bottom:20px">
+      <h2>Enviar registro / feedback</h2>
+      <input id="turma" type="text" placeholder="Nome da turma (ex: 7ºA)">
+      <textarea id="feedback" placeholder="O que vocês fizeram hoje?" rows="4"></textarea>
+      <textarea id="funcao" placeholder="Função da turma na horta (irrigação, plantio, colheita...)" rows="2"></textarea>
+      <button id="btnEnviar" style="background:green;color:#fff;padding:10px;border:none;border-radius:6px;margin-top:8px">Salvar Registro</button>
+    </section>
 
-    <input id="turma" type="text" placeholder="Nome da turma (ex: 7ºA)">
-    <textarea id="feedback" placeholder="O que vocês fizeram hoje?" rows="4"></textarea>
-    <textarea id="funcao" placeholder="Função da turma na horta (irrigação, plantio, colheita...)" rows="2"></textarea>
+    <section>
+      <h2>Meus registros</h2>
+      <div id="lista"></div>
+    </section>
+  </main>
 
-    <button onclick="enviar()">Salvar Registro</button>
-
-    <h3>Registros enviados:</h3>
-    <div id="lista"></div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
-  authDomain: "horta-automatica.firebaseapp.com",
-  projectId: "horta-automatica",
-  storageBucket: "horta-automatica.firebasestorage.app",
-  messagingSenderId: "177154489173",
-  appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 🔥 SALVAR NO FIREBASE
-window.enviar = async function() {
-    const turma = document.getElementById("turma").value;
-    const feedback = document.getElementById("feedback").value;
-    const funcao = document.getElementById("funcao").value;
-
-    if (!turma || !feedback) {
-        alert("Preencha todos os campos!");
-        return;
-    }
-
-    await addDoc(collection(db, "feedbacks"), {
-        turma,
-        feedback,
-        funcao,
-        data: new Date().toLocaleString()
-    });
-
-    alert("Registro enviado!");
-    carregar();
-};
-
-// 🔥 CARREGAR REGISTROS NA TELA
-async function carregar() {
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
-
-    const querySnapshot = await getDocs(collection(db, "feedbacks"));
-    querySnapshot.forEach((doc) => {
-        const item = doc.data();
-        lista.innerHTML += `
-            <div class="registro">
-                <b>${item.turma}</b> — ${item.data}<br>
-                <b>Função:</b> ${item.funcao}<br>
-                <b>Atividade:</b> ${item.feedback}
-            </div>
-        `;
-    });
-}
-
-// Carregar ao abrir
-carregar();
-</script>
-
+  <script type="module" src="aluno.js"></script>
 </body>
 </html>
