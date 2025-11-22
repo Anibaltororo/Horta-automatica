@@ -1,61 +1,76 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tela de login</title>
-<style>
-    body{font-family: Arial, Helvetica, sans-serif; background-image: linear-gradient(45deg, green, wh8ite);}
- div{background-color: rgba(0, 0, 0, 0.8);position: absolute;
- top: 50%;
-left: 50%;
- transform: translate(-50%, -50%);padding: 80px;
- border-radius: 15px;
- color: white;}
- input{ padding: 15px;
-border: none ;
-outline: none ; 
-font-size: 15px;}
-button{ background-color: dodgerblue ;
-border: none;
-padding: 15px;
-width: 100%;
-border-radius: 10px;
-color: white;
-font-size: 15px; }
-button:hover{ background-color: deepskyblue ; cursor: pointer;}
-h2{ 
-    color: greenyellow; font-size : 20px ;}
-</style>
-<script type="module" src="script.js"></script>
+    <title>Login - Horta Automatizada</title>
 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #2e7d32, #66bb6a);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 40px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+            color: #fff;
+            backdrop-filter: blur(8px);
+        }
+
+        .login-box h2 {
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 12px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: #1b5e20;
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #2e7d32;
+        }
+    </style>
 </head>
 
 <body>
-    <div>
-        <h2>Bem vindo ao DDP!</h2>
-        <h1>login</h1>
-        <input ty8pe="text" placeholder="nome">
-        <br>
-        <br>
-        <input type="password" placeholder="senha">
-        <br>
-        <br>
-        <button onclick="fazerLogin()">Entrar</button>
+    <div class="login-box">
+        <h2>Login</h2>
 
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
     </div>
-    <script>
-  function fazerLogin() {
-    const usuario = document.querySelector('input[type="text"]').value;
-    const senha = document.querySelector('input[type="password"]').value;
 
-    // Login simples de demonstração
-    if (usuario === "admin" && senha === "1234") {
-      window.location.href = "painel.html"; // leva pra página principal
-    } else {
-      alert("Usuário ou senha incorretos!");
-    }
-  }
-</script>
+    <script type="module" src="login.js"></script>
 </body>
 </html>
