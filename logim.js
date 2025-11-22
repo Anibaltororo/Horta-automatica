@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.g8static.com/firebasejs/11.0.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
@@ -36,9 +36,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         const role = snap.data().role;
 
         if (role === "professor") {
-            window.location.href = "painel-professor.html";
+            window.location.href = "painel.html"; 
         } else if (role === "aluno") {
-            window.location.href = "painel-aluno.html";
+            window.location.href = "aluno.html"; 
         } else {
             alert("Erro: role desconhecido.");
         }
