@@ -3,70 +3,145 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Área do Aluno - Horta</title>
+  <title>Painel Aluno - Horta</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
-  <div class="nav-professor">
-    <h1>📚 Área do Aluno - 🌱 Horta</h1>
-    <button id="btnSair">Sair</button>
+  <div class="sidebar">
+    <div class="logo">🌱 Horta</div>
+    <nav class="menu">
+      <button class="menu-btn active" onclick="mudarPagina('dashboard')">📊 Dashboard</button>
+      <button class="menu-btn" onclick="mudarPagina('avisos')">📢 Avisos</button>
+      <button class="menu-btn" onclick="mudarPagina('cursos')">📚 Cursos</button>
+      <button class="menu-btn" onclick="mudarPagina('projeto')">🌿 Projeto</button>
+      <button class="menu-btn" onclick="mudarPagina('graficos')">📈 Gráficos</button>
+      <button class="menu-btn" onclick="mudarPagina('feedback')">💬 Feedback</button>
+    </nav>
+    <button id="btnSair" class="btn-sair">🚪 Sair</button>
   </div>
 
-  <main class="container">
-    <!-- PAINEL HORTA -->
-    <section class="caixa painel-horta">
-      <h2>📊 Monitoramento da Horta</h2>
-      <div class="cards-sensor">
-        <div class="card-sensor">
-          <span class="label">🌡️ Temperatura</span>
-          <span class="valor" id="temp">-- °C</span>
-        </div>
-        <div class="card-sensor">
-          <span class="label">💧 Umidade do Solo</span>
-          <span class="valor" id="umidade">-- %</span>
-        </div>
-        <div class="card-sensor">
-          <span class="label">☀️ Luminosidade</span>
-          <span class="valor" id="lumi">-- lux</span>
-        </div>
-        <div class="card-sensor">
-          <span class="label">🌱 pH do Solo</span>
-          <span class="valor" id="ph">-- </span>
-        </div>
+  <div class="main-content">
+    <header class="topbar">
+      <h1 id="tituloPagina">Dashboard</h1>
+      <div class="user-info">
+        <span id="nomeUsuario">Usuário</span>
       </div>
-    </section>
+    </header>
 
-    <!-- AVISOS -->
-    <section class="caixa">
-      <h2>📢 Avisos do Professor</h2>
-      <div id="avisosList" class="avisos-list">
-        <p class="muted">Carregando avisos...</p>
+    <div class="container">
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="pagina active">
+        <section class="caixa painel-horta">
+          <h2>📊 Monitoramento da Horta em Tempo Real</h2>
+          <div class="cards-sensor">
+            <div class="card-sensor">
+              <span class="label">🌡️ Temperatura</span>
+              <span class="valor" id="temp">-- °C</span>
+            </div>
+            <div class="card-sensor">
+              <span class="label">💧 Umidade do Solo</span>
+              <span class="valor" id="umidade">-- %</span>
+            </div>
+            <div class="card-sensor">
+              <span class="label">☀️ Luminosidade</span>
+              <span class="valor" id="lumi">-- lux</span>
+            </div>
+            <div class="card-sensor">
+              <span class="label">🌱 pH do Solo</span>
+              <span class="valor" id="ph">-- </span>
+            </div>
+          </div>
+        </section>
+
+        <section class="caixa">
+          <h2>📝 Enviar Registro de Atividade</h2>
+          <input id="feedback" type="text" placeholder="O que vocês fizeram hoje na horta?">
+          <input id="funcao" type="text" placeholder="Função (irrigação, plantio, colheita...)">
+          <div class="actions">
+            <button id="btnEnviar" class="btn-primary">Salvar Registro</button>
+            <small id="statusMsg" class="muted"></small>
+          </div>
+        </section>
+
+        <section class="caixa registros">
+          <h2>📋 Registros Recentes</h2>
+          <div id="lista" class="lista-registros">
+            <p class="muted">Carregando registros...</p>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <!-- FORMULÁRIO -->
-    <section class="caixa form-caixa">
-      <h2>📝 Enviar Registro de Atividade</h2>
-      <input id="feedback" type="text" placeholder="O que vocês fizeram hoje na horta?">
-      <input id="funcao" type="text" placeholder="Função (irrigação, plantio, colheita...)">
-      <div class="actions">
-        <button id="btnEnviar" class="btn-primary">Salvar Registro</button>
-        <small id="statusMsg" class="muted"></small>
+      <!-- AVISOS -->
+      <div id="avisos" class="pagina">
+        <section class="caixa">
+          <h2>📢 Avisos do Professor</h2>
+          <div id="avisosList" class="avisos-list">
+            <p class="muted">Carregando avisos...</p>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <!-- REGISTROS -->
-    <section class="caixa registros">
-      <h2>📋 Seus Registros Recentes</h2>
-      <div id="lista" class="lista-registros">
-        <p class="muted">Carregando registros...</p>
+      <!-- CURSOS -->
+      <div id="cursos" class="pagina">
+        <section class="caixa">
+          <h2>📚 Cursos de Plantagem</h2>
+          <div id="listaC cursos" class="cursos-list">
+            <p class="muted">Carregando cursos...</p>
+          </div>
+        </section>
       </div>
-    </section>
-  </main>
 
-  <footer class="footer">
-    <small>&copy; Horta Escolar - Educação e Tecnologia</small>
-  </footer>
+      <!-- PROJETO -->
+      <div id="projeto" class="pagina">
+        <section class="caixa">
+          <h2>🌿 Sobre o Projeto Horta</h2>
+          <div id="infoProjeto" class="info-projeto">
+            <p class="muted">Carregando informações do projeto...</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- GRÁFICOS -->
+      <div id="graficos" class="pagina">
+        <section class="caixa">
+          <h2>📈 Gráficos e Estatísticas</h2>
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3>Temperatura (últimos 7 dias)</h3>
+              <canvas id="chartTemp"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Umidade do Solo (últimos 7 dias)</h3>
+              <canvas id="chartUmidade"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Luminosidade (últimos 7 dias)</h3>
+              <canvas id="chartLumi"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>pH do Solo (últimos 7 dias)</h3>
+              <canvas id="chartPH"></canvas>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- FEEDBACK -->
+      <div id="feedback" class="pagina">
+        <section class="caixa">
+          <h2>💬 Meus Feedbacks e Respostas</h2>
+          <div id="minhasFeedbacks" class="meus-feedbacks">
+            <p class="muted">Carregando seus feedbacks...</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <small>&copy; Horta Escolar - Educação e Tecnologia</small>
+    </footer>
+  </div>
 
   <script type="module" src="aluno.js"></script>
 </body>
