@@ -1,4 +1,4 @@
-// professor.js
+// ...existing code...
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query
@@ -28,18 +28,31 @@ onAuthStateChanged(auth, (user) => {
   carregarTodosFeedbacks();
 });
 
+// utilitário para formatar datas (Firestore Timestamp ou Date/number)
+function formatDate(ts) {
+  if (!ts) return "";
+  // Timestamp do Firestore tem método toDate() ou toMillis()
+  if (typeof ts.toDate === "function") return ts.toDate().toLocaleString();
+  if (ts && ts.seconds && typeof ts.toMillis === "function") return new Date(ts.toMillis()).toLocaleString();
+  return new Date(ts).toLocaleString();
+}
+
 // Enviar aviso
-document.getElementById("btnAviso").addEventListener("click", async () => {
-  const titulo = document.getElementById("tituloAviso").value.trim();
-  const msg = document.getElementById("msgAviso").value.trim();
-  if (!titulo || !msg) return alert("Preencha título e mensagem");
-  await addDoc(collection(db, "avisos"), { titulo, msg, data: new Date() });
-  alert("Aviso publicado!");
-});
+const btnAviso = document.getElementById("btnAviso");
+if (btnAviso) {
+  btnAviso.addEventListener("click", async () => {
+    const titulo = document.getElementById("tituloAviso").value.trim();
+    const msg = document.getElementById("msgAviso").value.trim();
+    if (!titulo || !msg) return alert("Preencha título e mensagem");
+    await addDoc(collection(db, "avisos"), { titulo, msg, data: new Date() });
+    alert("Aviso publicado!");
+  });
+}
 
 // Carregar todos os feedbacks
 async function carregarTodosFeedbacks() {
   const div = document.getElementById("conteudo");
+  if (!div) return;
   div.innerHTML = "<p>Carregando...</p>";
   try {
     const q = query(collection(db, "feedbacks"), orderBy("data", "desc"));
@@ -52,7 +65,7 @@ async function carregarTodosFeedbacks() {
     snap.forEach(docu => {
       const f = docu.data();
       const id = docu.id;
-      const date = f.data ? new Date(f.data.seconds ? f.data.toMillis() : f.data).toLocaleString() : "";
+      const date = formatDate(f.data);
 
       const bloco = document.createElement("div");
       bloco.className = "item";
@@ -84,8 +97,9 @@ async function carregarTodosFeedbacks() {
 window.excluirFeedback = async function(id) {
   if (!confirm("Deseja excluir este feedback (e todas as respostas)?")) return;
   try {
-    // deletar subcoleção respostas NÃO é automático — deletar apenas o documento pai vai deixá-las órfãs.
-    // Para simplicidade: aqui deletamos o documento pai (feedback). Em producao, pode ser necessário excluir respostas separadamente.
+    // Atenção: deletar subcoleções no Firestore não é automático.
+    // Aqui deletamos apenas o documento pai. Se precisar remover respostas,
+    // é necessário iterar e deletar cada documento da subcoleção.
     await deleteDoc(doc(db, "feedbacks", id));
     carregarTodosFeedbacks();
   } catch (e) {
@@ -141,7 +155,7 @@ async function carregarRespostas(feedbackId) {
     snap.forEach(rdoc => {
       const r = rdoc.data();
       const rid = rdoc.id;
-      const date = r.data ? new Date(r.data.seconds ? r.data.toMillis() : r.data).toLocaleString() : "";
+      const date = formatDate(r.data);
       const div = document.createElement("div");
       div.style.background = "#f7f7f7";
       div.style.padding = "8px";
@@ -185,3 +199,4 @@ window.excluirResposta = async function(feedbackId, respostaId) {
     alert("Erro ao excluir resposta.");
   }
 }
+// ...existing code...

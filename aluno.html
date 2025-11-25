@@ -1,28 +1,47 @@
+// ...existing code...
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Área do Aluno - Horta</title>
-<link rel="stylesheet" href="style.css"> <!-- opcional -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Área do Aluno - Horta</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main style="max-width:800px;margin:20px auto;padding:10px">
+  <header class="topbar">
     <h1>Área do Aluno 🌱</h1>
+  </header>
 
-    <section class="caixa" style="margin-bottom:20px">
+  <main class="container">
+    <section class="avisos caixa">
+      <h2>Avisos do Professor</h2>
+      <div id="avisosList" class="avisos-list">
+        <p class="muted">Carregando avisos...</p>
+      </div>
+    </section>
+
+    <section class="caixa form-caixa">
       <h2>Enviar registro / feedback</h2>
       <input id="turma" type="text" placeholder="Nome da turma (ex: 7ºA)">
       <textarea id="feedback" placeholder="O que vocês fizeram hoje?" rows="4"></textarea>
-      <textarea id="funcao" placeholder="Função da turma na horta (irrigação, plantio, colheita...)" rows="2"></textarea>
-      <button id="btnEnviar" style="background:green;color:#fff;padding:10px;border:none;border-radius:6px;margin-top:8px">Salvar Registro</button>
+      <input id="funcao" type="text" placeholder="Função da turma na horta (irrigação, plantio, colheita...)">
+      <div class="actions">
+        <button id="btnEnviar" class="btn-primary">Salvar Registro</button>
+        <small id="statusMsg" class="muted"></small>
+      </div>
     </section>
 
-    <section>
-      <h2>Meus registros</h2>
-      <div id="lista"></div>
+    <section class="caixa registros">
+      <h2>Registros Recentes</h2>
+      <div id="lista" class="lista-registros">
+        <p class="muted">Carregando registros...</p>
+      </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <small>&copy; Horta - Escola</small>
+  </footer>
 
   <script type="module" src="aluno.js"></script>
 </body>
