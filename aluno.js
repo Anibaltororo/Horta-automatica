@@ -1,4 +1,4 @@
-// ...existing code...
+
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs, orderBy, query

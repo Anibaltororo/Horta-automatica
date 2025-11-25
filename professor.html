@@ -1,24 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Painel do Professor - Horta</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel do Professor - Horta</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .nav-professor {
+      background: var(--card);
+      padding: 12px;
+      border-bottom: 1px solid #edf2f7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-professor button {
+      background: #dc2626;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .nav-professor button:hover { opacity: 0.9; }
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #edf2f7;
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row input, .form-row textarea { flex: 1; }
+    .feedback-item, .resposta-item {
+      border-left: 4px solid var(--accent);
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fbfdfe;
+      border-radius: 6px;
+    }
+    .resposta-item { background: #f0f9ff; border-left-color: #3b82f6; }
+    .btn-group { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .btn-group button { padding: 6px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-edit { background: #f59e0b; color: #fff; }
+    .btn-delete { background: #ef4444; color: #fff; }
+    .btn-reply { background: #3b82f6; color: #fff; }
+  </style>
 </head>
-<body style="max-width:1000px;margin:20px auto;padding:10px">
-  <h1>Painel do Professor 👨‍🏫</h1>
+<body>
+  <div class="nav-professor">
+    <h1>📊 Painel do Professor</h1>
+    <button id="btnSair">Sair</button>
+  </div>
 
-  <section style="margin-bottom:20px">
-    <h2>Enviar aviso</h2>
-    <input id="tituloAviso" placeholder="Título">
-    <textarea id="msgAviso" placeholder="Mensagem"></textarea>
-    <button id="btnAviso">Publicar Aviso</button>
-  </section>
+  <main class="container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="mudarAba('avisos')">📢 Avisos</button>
+      <button class="tab-btn" onclick="mudarAba('feedbacks')">💬 Feedbacks</button>
+    </div>
 
-  <section>
-    <h2>Feedbacks</h2>
-    <div id="conteudo"></div>
-  </section>
+    <!-- ABA AVISOS -->
+    <div id="avisos" class="tab-content active caixa">
+      <h2>Publicar Aviso</h2>
+      <input id="tituloAviso" type="text" placeholder="Título do aviso" style="width:100%;padding:10px;margin:8px 0;border:1px solid #e6eef0;border-radius:6px;">
+      <textarea id="msgAviso" placeholder="Mensagem..." rows="4" style="width:100%;padding:10px;margin:8px 0;border:1px solid #e6eef0;border-radius:6px;"></textarea>
+      <button id="btnAviso" class="btn-primary">Publicar Aviso</button>
+      <small id="statusAviso" class="muted" style="display:block;margin-top:8px;"></small>
+
+      <h3 style="margin-top:20px;">Avisos Publicados</h3>
+      <div id="listaAvisos"></div>
+    </div>
+
+    <!-- ABA FEEDBACKS -->
+    <div id="feedbacks" class="tab-content caixa">
+      <h2>Feedbacks dos Alunos</h2>
+      <div id="listaFeedbacks"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <small>&copy; Horta - Escola</small>
+  </footer>
 
   <script type="module" src="professor.js"></script>
 </body>
