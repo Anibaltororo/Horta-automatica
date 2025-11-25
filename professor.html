@@ -45,8 +45,6 @@
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .form-row { display: flex; gap: 12px; }
-    .form-row input, .form-row textarea { flex: 1; }
     .feedback-item, .resposta-item {
       border-left: 4px solid var(--accent);
       padding: 12px;
@@ -60,25 +58,65 @@
     .btn-edit { background: #f59e0b; color: #fff; }
     .btn-delete { background: #ef4444; color: #fff; }
     .btn-reply { background: #3b82f6; color: #fff; }
+    .cards-sensor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card-sensor {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #bbf7d0;
+    }
+    .card-sensor .label { font-size: 12px; color: #166534; display: block; margin-bottom: 8px; }
+    .card-sensor .valor { font-size: 20px; font-weight: bold; color: #15803d; }
   </style>
 </head>
 <body>
   <div class="nav-professor">
-    <h1>📊 Painel do Professor</h1>
+    <h1>📊 Painel do Professor - 🌱 Horta</h1>
     <button id="btnSair">Sair</button>
   </div>
 
   <main class="container">
     <div class="tabs">
-      <button class="tab-btn active" onclick="mudarAba('avisos')">📢 Avisos</button>
+      <button class="tab-btn active" onclick="mudarAba('painel')">📊 Painel</button>
+      <button class="tab-btn" onclick="mudarAba('avisos')">📢 Avisos</button>
       <button class="tab-btn" onclick="mudarAba('feedbacks')">💬 Feedbacks</button>
     </div>
 
+    <!-- ABA PAINEL HORTA -->
+    <div id="painel" class="tab-content active caixa">
+      <h2>📊 Monitoramento da Horta em Tempo Real</h2>
+      <div class="cards-sensor">
+        <div class="card-sensor">
+          <span class="label">🌡️ Temperatura</span>
+          <span class="valor" id="temp">-- °C</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">💧 Umidade do Solo</span>
+          <span class="valor" id="umidade">-- %</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">☀️ Luminosidade</span>
+          <span class="valor" id="lumi">-- lux</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">🌱 pH do Solo</span>
+          <span class="valor" id="ph">-- </span>
+        </div>
+      </div>
+      <small style="color:var(--muted);">Atualizando a cada 5 segundos...</small>
+    </div>
+
     <!-- ABA AVISOS -->
-    <div id="avisos" class="tab-content active caixa">
+    <div id="avisos" class="tab-content caixa">
       <h2>Publicar Aviso</h2>
-      <input id="tituloAviso" type="text" placeholder="Título do aviso" style="width:100%;padding:10px;margin:8px 0;border:1px solid #e6eef0;border-radius:6px;">
-      <textarea id="msgAviso" placeholder="Mensagem..." rows="4" style="width:100%;padding:10px;margin:8px 0;border:1px solid #e6eef0;border-radius:6px;"></textarea>
+      <input id="tituloAviso" type="text" placeholder="Título do aviso">
+      <textarea id="msgAviso" placeholder="Mensagem..." rows="4"></textarea>
       <button id="btnAviso" class="btn-primary">Publicar Aviso</button>
       <small id="statusAviso" class="muted" style="display:block;margin-top:8px;"></small>
 
@@ -94,7 +132,7 @@
   </main>
 
   <footer class="footer">
-    <small>&copy; Horta - Escola</small>
+    <small>&copy; Horta Escolar - Educação e Tecnologia</small>
   </footer>
 
   <script type="module" src="professor.js"></script>

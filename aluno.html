@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,31 +7,57 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <h1>Área do Aluno 🌱</h1>
-  </header>
+  <div class="nav-professor">
+    <h1>📚 Área do Aluno - 🌱 Horta</h1>
+    <button id="btnSair">Sair</button>
+  </div>
 
   <main class="container">
-    <section class="avisos caixa">
-      <h2>Avisos do Professor</h2>
+    <!-- PAINEL HORTA -->
+    <section class="caixa painel-horta">
+      <h2>📊 Monitoramento da Horta</h2>
+      <div class="cards-sensor">
+        <div class="card-sensor">
+          <span class="label">🌡️ Temperatura</span>
+          <span class="valor" id="temp">-- °C</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">💧 Umidade do Solo</span>
+          <span class="valor" id="umidade">-- %</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">☀️ Luminosidade</span>
+          <span class="valor" id="lumi">-- lux</span>
+        </div>
+        <div class="card-sensor">
+          <span class="label">🌱 pH do Solo</span>
+          <span class="valor" id="ph">-- </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- AVISOS -->
+    <section class="caixa">
+      <h2>📢 Avisos do Professor</h2>
       <div id="avisosList" class="avisos-list">
         <p class="muted">Carregando avisos...</p>
       </div>
     </section>
 
+    <!-- FORMULÁRIO -->
     <section class="caixa form-caixa">
-      <h2>Enviar registro / feedback</h2>
-      <input id="turma" type="text" placeholder="Nome da turma (ex: 7ºA)">
-      <textarea id="feedback" placeholder="O que vocês fizeram hoje?" rows="4"></textarea>
-      <input id="funcao" type="text" placeholder="Função da turma na horta (irrigação, plantio, colheita...)">
+      <h2>📝 Enviar Registro de Atividade</h2>
+      <input id="feedback" type="text" placeholder="O que vocês fizeram hoje na horta?">
+      <input id="funcao" type="text" placeholder="Função (irrigação, plantio, colheita...)">
       <div class="actions">
         <button id="btnEnviar" class="btn-primary">Salvar Registro</button>
         <small id="statusMsg" class="muted"></small>
       </div>
     </section>
 
+    <!-- REGISTROS -->
     <section class="caixa registros">
-      <h2>Registros Recentes</h2>
+      <h2>📋 Seus Registros Recentes</h2>
       <div id="lista" class="lista-registros">
         <p class="muted">Carregando registros...</p>
       </div>
@@ -40,7 +65,7 @@
   </main>
 
   <footer class="footer">
-    <small>&copy; Horta - Escola</small>
+    <small>&copy; Horta Escolar - Educação e Tecnologia</small>
   </footer>
 
   <script type="module" src="aluno.js"></script>

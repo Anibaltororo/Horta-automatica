@@ -37,6 +37,11 @@
     .login-container button:hover { opacity: 0.9; }
     .login-container small { display: block; margin-top: 10px; color: var(--muted); text-align: center; }
     .error { color: #dc2626; font-size: 13px; margin-top: 10px; }
+    .tab-login { display: none; }
+    .tab-login.active { display: block; }
+    .tabs-login { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; }
+    .tab-login-btn { flex: 1; padding: 10px; background: transparent; border: none; cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; color: var(--muted); }
+    .tab-login-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
   </style>
 </head>
 <body>
@@ -45,13 +50,37 @@
   </header>
 
   <div class="login-container">
-    <h1>Fazer Login</h1>
-    <input id="email" type="email" placeholder="Email">
-    <input id="senha" type="password" placeholder="Senha">
-    <button id="btnLogin">Entrar</button>
-    <button id="btnRegistro" style="background:#6b7280;margin-top:5px">Registrar</button>
-    <div id="erro" class="error"></div>
-    <small>Escolha sua função após registrar</small>
+    <div class="tabs-login">
+      <button class="tab-login-btn active" onclick="mudarTabLogin('login')">🔐 Login</button>
+      <button class="tab-login-btn" onclick="mudarTabLogin('registro')">📝 Registro</button>
+    </div>
+
+    <!-- ABA LOGIN -->
+    <div id="login" class="tab-login active">
+      <h2>Fazer Login</h2>
+      <input id="emailLogin" type="email" placeholder="Email">
+      <input id="senhaLogin" type="password" placeholder="Senha">
+      <button id="btnLogin">Entrar</button>
+      <div id="erroLogin" class="error"></div>
+    </div>
+
+    <!-- ABA REGISTRO -->
+    <div id="registro" class="tab-login">
+      <h2>Registrar</h2>
+      <select id="tipoUsuario" style="width:100%;padding:10px;margin:10px 0;border:1px solid #e6eef0;border-radius:8px;font-size:14px;">
+        <option value="">Escolha seu tipo</option>
+        <option value="professor">👨‍🏫 Professor</option>
+        <option value="aluno">👨‍🎓 Aluno</option>
+      </select>
+      <input id="nomeRegistro" type="text" placeholder="Nome completo">
+      <input id="turmaRegistro" type="text" placeholder="Turma (ex: 7ºA)" style="display:none;">
+      <input id="emailRegistro" type="email" placeholder="Email">
+      <input id="senhaRegistro" type="password" placeholder="Senha">
+      <input id="confirmarSenhaRegistro" type="password" placeholder="Confirmar senha">
+      <button id="btnRegistro">Registrar</button>
+      <div id="erroRegistro" class="error"></div>
+      <small>Apenas emails aprovados podem se registrar como professor</small>
+    </div>
   </div>
 
   <script type="module" src="auth.js"></script>

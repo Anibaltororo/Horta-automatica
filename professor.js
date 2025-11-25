@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
@@ -55,6 +55,22 @@ window.mudarAba = function(aba) {
   
   if (aba === "avisos") carregarAvisos();
   if (aba === "feedbacks") carregarFeedbacks();
+}
+
+// SENSORES
+async function carregarSensores() {
+  try {
+    const snap = await getDoc(doc(db, "sensores", "horta"));
+    if (snap.exists()) {
+      const dados = snap.data();
+      document.getElementById("temp").textContent = dados.temperatura ? dados.temperatura.toFixed(1) + " °C" : "-- °C";
+      document.getElementById("umidade").textContent = dados.umidade ? dados.umidade.toFixed(1) + " %" : "-- %";
+      document.getElementById("lumi").textContent = dados.luminosidade ? dados.luminosidade.toFixed(0) + " lux" : "-- lux";
+      document.getElementById("ph").textContent = dados.ph ? dados.ph.toFixed(2) : "-- ";
+    }
+  } catch (e) {
+    console.error("Erro ao carregar sensores:", e);
+  }
 }
 
 // AVISOS
@@ -158,12 +174,11 @@ async function carregarFeedbacks() {
       const item = document.createElement("div");
       item.className = "feedback-item";
       item.innerHTML = `
-        <b>${f.turma || "Sem turma"}</b>
-        <div class="muted" style="font-size:12px;margin:4px 0;">${formatDate(f.data)} • Função: ${f.funcao || "-"}</div>
+        <b>${f.turma || "Sem turma"}</b> - ${f.aluno || "Aluno"}
+        <div class="muted" style="font-size:12px;margin:4px 0;">${formatDate(f.data)} • ${f.funcao || ""}</div>
         <div style="margin:8px 0;"><strong>Atividade:</strong> ${(f.feedback || "").replace(/\n/g, "<br>")}</div>
         <div class="btn-group">
           <button class="btn-reply" onclick="responderFeedback('${id}')">💬 Responder</button>
-          <button class="btn-edit" onclick="editarFeedback('${id}')">✏️ Editar</button>
           <button class="btn-delete" onclick="excluirFeedback('${id}')">🗑️ Excluir</button>
         </div>
         <div id="respostas-${id}" style="margin-top:10px;"></div>
@@ -192,7 +207,6 @@ async function carregarRespostas(feedbackId) {
         <small>${r.autor || "professor"} - ${formatDate(r.data)}</small>
         <div style="margin:6px 0;">${(r.texto || "").replace(/\n/g, "<br>")}</div>
         <div class="btn-group">
-          <button class="btn-edit" style="padding:4px 8px;font-size:11px;" onclick="editarResposta('${feedbackId}','${rid}')">✏️ Editar</button>
           <button class="btn-delete" style="padding:4px 8px;font-size:11px;" onclick="excluirResposta('${feedbackId}','${rid}')">🗑️ Excluir</button>
         </div>
       `;
@@ -216,18 +230,6 @@ window.responderFeedback = async function(id) {
   }
 }
 
-window.editarFeedback = async function(id) {
-  const novo = prompt("Editar feedback:");
-  if (!novo) return;
-  try {
-    await updateDoc(doc(db, "feedbacks", id), { feedback: novo, data: new Date() });
-    carregarFeedbacks();
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao editar.");
-  }
-}
-
 window.excluirFeedback = async function(id) {
   if (!confirm("Excluir feedback?")) return;
   try {
@@ -236,18 +238,6 @@ window.excluirFeedback = async function(id) {
   } catch (e) {
     console.error(e);
     alert("Erro ao excluir.");
-  }
-}
-
-window.editarResposta = async function(feedbackId, respostaId) {
-  const novo = prompt("Editar resposta:");
-  if (!novo) return;
-  try {
-    await updateDoc(doc(db, "feedbacks", feedbackId, "respostas", respostaId), { texto: novo, data: new Date() });
-    carregarFeedbacks();
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao editar resposta.");
   }
 }
 
@@ -264,3 +254,5 @@ window.excluirResposta = async function(feedbackId, respostaId) {
 
 carregarAvisos();
 carregarFeedbacks();
+carregarSensores();
+setInterval(carregarSensores, 5000); // Atualizar sensores a cada 5s
