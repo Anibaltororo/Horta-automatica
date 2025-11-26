@@ -47,12 +47,12 @@ window.mudarPagina = function(pagina) {
   event.target.classList.add("active");
 
   const titulos = {
-    dashboard: "Dashboard",
-    avisos: "Publicar Avisos",
-    feedbacks: "Feedbacks dos Alunos",
-    cursos: "Gerenciar Cursos",
-    projeto: "Informações do Projeto",
-    graficos: "Gráficos e Estatísticas"
+    dashboard: "📊 Dashboard",
+    avisos: "📢 Publicar Avisos",
+    feedbacks: "💬 Feedbacks dos Alunos",
+    cursos: "📚 Gerenciar Cursos",
+    projeto: "🌿 Informações do Projeto",
+    graficos: "📈 Gráficos e Estatísticas"
   };
   document.getElementById("tituloPagina").textContent = titulos[pagina] || "Horta";
 
@@ -72,7 +72,7 @@ function formatDate(ts) {
   } catch { return ""; }
 }
 
-// SENSORES
+// ===== SENSORES =====
 async function carregarSensores() {
   try {
     const snap = await getDoc(doc(db, "sensores", "horta"));
@@ -88,7 +88,7 @@ async function carregarSensores() {
   }
 }
 
-// REGISTROS
+// ===== REGISTROS =====
 async function carregarRegistros() {
   const listaEl = document.getElementById("lista");
   if (!listaEl) return;
@@ -119,7 +119,7 @@ async function carregarRegistros() {
   }
 }
 
-// AVISOS
+// ===== AVISOS =====
 const btnAviso = document.getElementById("btnAviso");
 const tituloAvisoEl = document.getElementById("tituloAviso");
 const msgAvisoEl = document.getElementById("msgAviso");
@@ -131,7 +131,7 @@ if (btnAviso) {
     const msg = msgAvisoEl.value.trim();
     statusAvisoEl.textContent = "";
     if (!titulo || !msg) {
-      statusAvisoEl.textContent = "Preencha título e mensagem.";
+      statusAvisoEl.textContent = "⚠️ Preencha título e mensagem.";
       return;
     }
     statusAvisoEl.textContent = "Publicando...";
@@ -139,12 +139,12 @@ if (btnAviso) {
       await addDoc(collection(db, "avisos"), { titulo, msg, data: new Date() });
       tituloAvisoEl.value = "";
       msgAvisoEl.value = "";
-      statusAvisoEl.textContent = "Aviso publicado!";
+      statusAvisoEl.textContent = "✓ Aviso publicado!";
       setTimeout(() => statusAvisoEl.textContent = "", 2500);
       carregarAvisos();
     } catch (e) {
       console.error(e);
-      statusAvisoEl.textContent = "Erro ao publicar.";
+      statusAvisoEl.textContent = "❌ Erro ao publicar.";
     }
   });
 }
@@ -171,7 +171,6 @@ async function carregarAvisos() {
         <div class="muted" style="font-size:12px;margin:4px 0;">${formatDate(a.data)}</div>
         <div style="margin:8px 0;">${(a.msg || "").replace(/\n/g, "<br>")}</div>
         <div class="btn-group">
-          <button class="btn-edit" onclick="editarAviso('${id}')">✏️ Editar</button>
           <button class="btn-delete" onclick="excluirAviso('${id}')">🗑️ Excluir</button>
         </div>
       `;
@@ -180,20 +179,6 @@ async function carregarAvisos() {
   } catch (e) {
     console.error(e);
     listaAvisosEl.innerHTML = "<p class='muted'>Erro ao carregar avisos.</p>";
-  }
-}
-
-window.editarAviso = async function(id) {
-  const novoTitulo = prompt("Novo título:");
-  if (!novoTitulo) return;
-  const novaMsg = prompt("Nova mensagem:");
-  if (!novaMsg) return;
-  try {
-    await updateDoc(doc(db, "avisos", id), { titulo: novoTitulo, msg: novaMsg, data: new Date() });
-    carregarAvisos();
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao editar.");
   }
 }
 
@@ -208,7 +193,7 @@ window.excluirAviso = async function(id) {
   }
 }
 
-// FEEDBACKS
+// ===== FEEDBACKS =====
 async function carregarFeedbacks() {
   const listaFeedbacksEl = document.getElementById("listaFeedbacks");
   if (!listaFeedbacksEl) return;
@@ -305,7 +290,7 @@ window.excluirResposta = async function(feedbackId, respostaId) {
   }
 }
 
-// CURSOS
+// ===== CURSOS =====
 const btnAdicionarCurso = document.getElementById("btnAdicionarCurso");
 const statusCurso = document.getElementById("statusCurso");
 
@@ -319,24 +304,24 @@ if (btnAdicionarCurso) {
 
     statusCurso.textContent = "";
     if (!titulo || !instrutor || !descricao) {
-      statusCurso.textContent = "Preencha título, instrutor e descrição.";
+      statusCurso.textContent = "⚠️ Preencha título, instrutor e descrição.";
       return;
     }
 
     statusCurso.textContent = "Adicionando...";
     try {
-      await addDoc(collection(db, "cursos"), { titulo, instrutor, descricao, duracao, nivel, ordem: new Date() });
+      await addDoc(collection(db, "cursos"), { titulo, instrutor, descricao, duracao, nivel, criadoEm: new Date() });
       document.getElementById("tituloCurso").value = "";
       document.getElementById("instrutorCurso").value = "";
       document.getElementById("descCurso").value = "";
       document.getElementById("duracaoCurso").value = "";
       document.getElementById("nivelCurso").value = "";
-      statusCurso.textContent = "Curso adicionado!";
+      statusCurso.textContent = "✓ Curso adicionado!";
       setTimeout(() => statusCurso.textContent = "", 2500);
       carregarCursos();
     } catch (e) {
       console.error(e);
-      statusCurso.textContent = "Erro ao adicionar.";
+      statusCurso.textContent = "❌ Erro ao adicionar.";
     }
   });
 }
@@ -346,8 +331,7 @@ async function carregarCursos() {
   if (!listaCursos) return;
   listaCursos.innerHTML = "<p class='muted'>Carregando cursos...</p>";
   try {
-    const q = query(collection(db, "cursos"), orderBy("ordem", "desc"));
-    const snap = await getDocs(q);
+    const snap = await getDocs(collection(db, "cursos"));
     listaCursos.innerHTML = "";
     if (snap.empty) {
       listaCursos.innerHTML = "<p class='muted'>Sem cursos cadastrados.</p>";
@@ -361,7 +345,7 @@ async function carregarCursos() {
       node.innerHTML = `
         <h3>${c.titulo}</h3>
         <p><strong>Instrutor:</strong> ${c.instrutor}</p>
-        <p>${c.descricao}</p>
+        <p><strong>Descrição:</strong> ${(c.descricao || "").replace(/\n/g, "<br>")}</p>
         <p><strong>Duração:</strong> ${c.duracao || "-"}</p>
         <p><strong>Nível:</strong> ${c.nivel || "-"}</p>
         <div class="btn-group">
@@ -387,7 +371,7 @@ window.excluirCurso = async function(id) {
   }
 }
 
-// PROJETO
+// ===== PROJETO =====
 const btnSalvarProjeto = document.getElementById("btnSalvarProjeto");
 const statusProjeto = document.getElementById("statusProjeto");
 
@@ -400,19 +384,19 @@ if (btnSalvarProjeto) {
 
     statusProjeto.textContent = "";
     if (!titulo || !descricao) {
-      statusProjeto.textContent = "Preencha título e descrição.";
+      statusProjeto.textContent = "⚠️ Preencha título e descrição.";
       return;
     }
 
     statusProjeto.textContent = "Salvando...";
     try {
       await setDoc(doc(db, "projeto", "info"), { titulo, descricao, objetivos, atividades });
-      statusProjeto.textContent = "Projeto salvo!";
+      statusProjeto.textContent = "✓ Projeto salvo!";
       setTimeout(() => statusProjeto.textContent = "", 2500);
       carregarProjeto();
     } catch (e) {
       console.error(e);
-      statusProjeto.textContent = "Erro ao salvar.";
+      statusProjeto.textContent = "❌ Erro ao salvar.";
     }
   });
 }
@@ -429,11 +413,11 @@ async function carregarProjeto() {
 
       const preview = document.getElementById("previewProjeto");
       preview.innerHTML = `
-        <h3>${p.titulo}</h3>
+        <h3 style="color:#1b5e20;margin-top:0;">${p.titulo}</h3>
         <p>${(p.descricao || "").replace(/\n/g, "<br>")}</p>
-        <h4>Objetivos:</h4>
+        <h4 style="color:#2e8b57;margin-top:16px;">Objetivos:</h4>
         <p>${(p.objetivos || "").replace(/\n/g, "<br>")}</p>
-        <h4>Atividades:</h4>
+        <h4 style="color:#2e8b57;margin-top:16px;">Atividades:</h4>
         <p>${(p.atividades || "").replace(/\n/g, "<br>")}</p>
       `;
     }
@@ -442,7 +426,7 @@ async function carregarProjeto() {
   }
 }
 
-// GRÁFICOS
+// ===== GRÁFICOS =====
 async function carregarGraficos() {
   try {
     const snap = await getDoc(doc(db, "historico", "dados"));
@@ -457,28 +441,28 @@ async function carregarGraficos() {
       if (chartTemp) chartTemp.destroy();
       chartTemp = new Chart(document.getElementById("chartTemp"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Temperatura (°C)", data: temp.slice(-7), borderColor: "#f59e0b", tension: 0.4, fill: true, backgroundColor: "rgba(245, 158, 11, 0.1)" }] },
+        data: { labels, datasets: [{ label: "Temperatura (°C)", data: temp.slice(-7), borderColor: "#f59e0b", backgroundColor: "rgba(245, 158, 11, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartUmidade) chartUmidade.destroy();
       chartUmidade = new Chart(document.getElementById("chartUmidade"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Umidade (%)", data: umidade.slice(-7), borderColor: "#3b82f6", tension: 0.4, fill: true, backgroundColor: "rgba(59, 130, 246, 0.1)" }] },
+        data: { labels, datasets: [{ label: "Umidade (%)", data: umidade.slice(-7), borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartLumi) chartLumi.destroy();
       chartLumi = new Chart(document.getElementById("chartLumi"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Luminosidade (lux)", data: luminosidade.slice(-7), borderColor: "#fbbf24", tension: 0.4, fill: true, backgroundColor: "rgba(251, 191, 36, 0.1)" }] },
+        data: { labels, datasets: [{ label: "Luminosidade (lux)", data: luminosidade.slice(-7), borderColor: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartPH) chartPH.destroy();
       chartPH = new Chart(document.getElementById("chartPH"), {
         type: "line",
-        data: { labels, datasets: [{ label: "pH", data: ph.slice(-7), borderColor: "#8b5cf6", tension: 0.4, fill: true, backgroundColor: "rgba(139, 92, 246, 0.1)" }] },
+        data: { labels, datasets: [{ label: "pH", data: ph.slice(-7), borderColor: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
     }

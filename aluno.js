@@ -47,12 +47,12 @@ window.mudarPagina = function(pagina) {
   event.target.classList.add("active");
 
   const titulos = {
-    dashboard: "Dashboard",
-    avisos: "Avisos do Professor",
-    cursos: "Cursos de Plantagem",
-    projeto: "Sobre o Projeto",
-    graficos: "Gráficos e Estatísticas",
-    feedback: "Meus Feedbacks"
+    dashboard: "📊 Dashboard",
+    avisos: "📢 Avisos do Professor",
+    cursos: "📚 Cursos de Plantagem",
+    projeto: "🌿 Sobre o Projeto",
+    graficos: "📈 Gráficos e Estatísticas",
+    feedback: "💬 Meus Feedbacks"
   };
   document.getElementById("tituloPagina").textContent = titulos[pagina] || "Horta";
 
@@ -89,11 +89,11 @@ if (btnEnviar) {
       });
       feedbackEl.value = "";
       funcaoEl.value = "";
-      statusMsg.textContent = "Registro salvo!";
+      statusMsg.textContent = "✓ Registro salvo!";
       carregarRegistros();
     } catch (e) {
       console.error(e);
-      statusMsg.textContent = "Erro ao salvar.";
+      statusMsg.textContent = "❌ Erro ao salvar.";
     }
     setTimeout(() => statusMsg.textContent = "", 2500);
   });
@@ -154,8 +154,8 @@ async function carregarAvisos() {
       const node = document.createElement("div");
       node.className = "aviso";
       node.innerHTML = `
-        <div class="titulo">${a.titulo || "Aviso"}</div>
-        <div class="muted">${formatDate(a.data)}</div>
+        <div style="font-weight:700;color:#1b5e20;margin-bottom:8px;">${a.titulo || "Aviso"}</div>
+        <div class="muted" style="font-size:12px;margin-bottom:8px;">${formatDate(a.data)}</div>
         <div style="margin-top:6px">${(a.msg || "").replace(/\n/g, "<br>")}</div>
       `;
       avisosList.appendChild(node);
@@ -171,8 +171,7 @@ async function carregarCursos() {
   if (!cursosList) return;
   cursosList.innerHTML = "<p class='muted'>Carregando cursos...</p>";
   try {
-    const q = query(collection(db, "cursos"), orderBy("ordem", "asc"));
-    const snap = await getDocs(q);
+    const snap = await getDocs(collection(db, "cursos"));
     if (snap.empty) {
       cursosList.innerHTML = "<p class='muted'>Sem cursos cadastrados.</p>";
       return;
@@ -185,7 +184,7 @@ async function carregarCursos() {
       node.innerHTML = `
         <h3>${c.titulo || "Curso"}</h3>
         <p><strong>Instrutor:</strong> ${c.instrutor || "-"}</p>
-        <p>${(c.descricao || "").replace(/\n/g, "<br>")}</p>
+        <p><strong>Descrição:</strong> ${(c.descricao || "").replace(/\n/g, "<br>")}</p>
         <p><strong>Duração:</strong> ${c.duracao || "-"}</p>
         <p><strong>Nível:</strong> ${c.nivel || "-"}</p>
       `;
@@ -206,15 +205,15 @@ async function carregarProjeto() {
     if (snap.exists()) {
       const p = snap.data();
       infoProjeto.innerHTML = `
-        <h3>${p.titulo || "Projeto Horta"}</h3>
+        <h3 style="color:#1b5e20;margin-top:0;">${p.titulo || "Projeto Horta"}</h3>
         <p>${(p.descricao || "").replace(/\n/g, "<br>")}</p>
-        <h4>Objetivos:</h4>
+        <h4 style="color:#2e8b57;margin-top:16px;">Objetivos:</h4>
         <p>${(p.objetivos || "").replace(/\n/g, "<br>")}</p>
-        <h4>Atividades Principais:</h4>
+        <h4 style="color:#2e8b57;margin-top:16px;">Atividades Principais:</h4>
         <p>${(p.atividades || "").replace(/\n/g, "<br>")}</p>
       `;
     } else {
-      infoProjeto.innerHTML = "<p>Informações do projeto não carregadas.</p>";
+      infoProjeto.innerHTML = "<p style='color:#999;'>O professor ainda não preencheu as informações do projeto.</p>";
     }
   } catch (e) {
     console.error(e);
@@ -251,28 +250,28 @@ async function carregarGraficos() {
       if (chartTemp) chartTemp.destroy();
       chartTemp = new Chart(document.getElementById("chartTemp"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Temperatura (°C)", data: temp.slice(-7), borderColor: "#f59e0b", tension: 0.4 }] },
+        data: { labels, datasets: [{ label: "Temperatura (°C)", data: temp.slice(-7), borderColor: "#f59e0b", backgroundColor: "rgba(245, 158, 11, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartUmidade) chartUmidade.destroy();
       chartUmidade = new Chart(document.getElementById("chartUmidade"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Umidade (%)", data: umidade.slice(-7), borderColor: "#3b82f6", tension: 0.4 }] },
+        data: { labels, datasets: [{ label: "Umidade (%)", data: umidade.slice(-7), borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartLumi) chartLumi.destroy();
       chartLumi = new Chart(document.getElementById("chartLumi"), {
         type: "line",
-        data: { labels, datasets: [{ label: "Luminosidade (lux)", data: luminosidade.slice(-7), borderColor: "#fbbf24", tension: 0.4 }] },
+        data: { labels, datasets: [{ label: "Luminosidade (lux)", data: luminosidade.slice(-7), borderColor: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
 
       if (chartPH) chartPH.destroy();
       chartPH = new Chart(document.getElementById("chartPH"), {
         type: "line",
-        data: { labels, datasets: [{ label: "pH", data: ph.slice(-7), borderColor: "#8b5cf6", tension: 0.4 }] },
+        data: { labels, datasets: [{ label: "pH", data: ph.slice(-7), borderColor: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.1)", tension: 0.4, fill: true }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
       });
     }

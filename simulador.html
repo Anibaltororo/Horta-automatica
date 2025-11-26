@@ -2,37 +2,138 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Simulador - Horta</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f5f7fa; }
-    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { color: #2e8b57; }
-    .status { background: #f0fdf4; padding: 15px; border-radius: 6px; border-left: 4px solid #2e8b57; margin: 15px 0; }
-    .status.ativo { background: #dcfce7; color: #166534; }
-    button { background: #2e8b57; color: #fff; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    button:hover { opacity: 0.9; }
-    button.parar { background: #dc2626; }
-    .log { background: #f9faf8; padding: 15px; border-radius: 6px; max-height: 300px; overflow-y: auto; font-size: 12px; font-family: monospace; }
-    .log div { margin: 5px 0; }
-    .log .sucesso { color: #16a34a; }
-    .log .erro { color: #dc2626; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #f0f7f4 0%, #e8f5e9 100%);
+      padding: 20px; 
+    }
+    .container { 
+      max-width: 700px; 
+      margin: 0 auto; 
+      background: #fff; 
+      padding: 30px; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
+    }
+    h1 { 
+      color: #1b5e20; 
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
+    .status { 
+      background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+      padding: 16px; 
+      border-radius: 8px; 
+      border-left: 4px solid #1b5e20;
+      margin-bottom: 24px;
+      font-weight: 600;
+      color: #1b5e20;
+    }
+    .status.ativo { 
+      background: linear-gradient(135deg, #dcfce7 0%, #e0f2fe 100%);
+      color: #166534;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    button { 
+      background: linear-gradient(135deg, #1b5e20 0%, #2e8b57 100%);
+      color: #fff; 
+      padding: 12px 20px; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+    }
+    button:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(27, 94, 32, 0.4);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    button.parar { 
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    button.parar:hover {
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    }
+    h3 {
+      color: #1b5e20;
+      margin-top: 28px;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+    .leitura-box {
+      background: linear-gradient(135deg, #f9fdf8 0%, #f0fdf4 100%);
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #d0e8d8;
+      margin-bottom: 20px;
+    }
+    .leitura-box p {
+      margin: 10px 0;
+      font-size: 15px;
+      color: #1a3a34;
+    }
+    .leitura-box strong {
+      color: #1b5e20;
+      font-weight: 700;
+    }
+    .log { 
+      background: #f9faf8; 
+      padding: 16px; 
+      border-radius: 8px; 
+      max-height: 400px; 
+      overflow-y: auto; 
+      font-size: 12px; 
+      font-family: 'Courier New', monospace;
+      border: 1px solid #d0e8d8;
+    }
+    .log div { 
+      margin: 6px 0; 
+      padding: 4px 0;
+    }
+    .log .sucesso { 
+      color: #16a34a; 
+      font-weight: 700;
+    }
+    .log .erro { 
+      color: #dc2626; 
+    }
+    .log .info {
+      color: #64748b;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🌱 Simulador de Leituras - Horta</h1>
+    <h1>🌱 Simulador de Leituras - Horta Escolar</h1>
     
-    <div class="status ativo">
-      <strong>Status:</strong> <span id="status">Aguardando inicialização...</span>
+    <div class="status ativo" id="status">
+      🟢 Simulador iniciado automaticamente!
     </div>
 
-    <div style="display: flex; gap: 10px;">
-      <button id="btnIniciar">▶️ Iniciar Simulador</button>
-      <button id="btnParar" class="parar" style="display:none;">⏹️ Parar Simulador</button>
+    <div class="btn-group">
+      <button id="btnIniciar" style="display:none;">▶️ Iniciar Simulador</button>
+      <button id="btnParar" class="parar">⏹️ Parar Simulador</button>
+      <button onclick="location.reload()" style="background:linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">🔄 Recarregar</button>
     </div>
 
-    <h3>📊 Última Leitura:</h3>
-    <div style="background: #fbfdfe; padding: 15px; border-radius: 6px; border: 1px solid #edf2f7;">
+    <h3>📊 Última Leitura Enviada:</h3>
+    <div class="leitura-box">
       <p><strong>🌡️ Temperatura:</strong> <span id="ultimaTemp">-- °C</span></p>
       <p><strong>💧 Umidade:</strong> <span id="ultimaUmidade">-- %</span></p>
       <p><strong>☀️ Luminosidade:</strong> <span id="ultimaLumi">-- lux</span></p>
@@ -40,9 +141,9 @@
       <p><strong>⏰ Horário:</strong> <span id="ultimaHora">--:--:--</span></p>
     </div>
 
-    <h3>📝 Log:</h3>
+    <h3>📝 Log de Atividades:</h3>
     <div class="log" id="log">
-      <div>Aguardando inicialização...</div>
+      <div class="info">🔄 Inicializando simulador...</div>
     </div>
   </div>
 
@@ -63,7 +164,7 @@
     const db = getFirestore();
 
     let intervalo = null;
-    let ativo = false;
+    let ativo = true;
 
     // Geradores
     function gerarTemperatura() {
@@ -124,7 +225,7 @@
         document.getElementById("ultimaPH").textContent = ph;
         document.getElementById("ultimaHora").textContent = new Date().toLocaleTimeString();
 
-        adicionarLog(`✅ Leituras enviadas: ${temperatura}°C | ${umidade}% | ${luminosidade}lux | pH ${ph}`, "sucesso");
+        adicionarLog(`✅ Leitura enviada: ${temperatura}°C | ${umidade}% | ${luminosidade}lux | pH ${ph}`, "sucesso");
 
         // Atualizar histórico
         await atualizarHistorico(temperatura, umidade, luminosidade, ph);
@@ -158,18 +259,10 @@
       }
     }
 
-    document.getElementById("btnIniciar").addEventListener("click", () => {
-      if (ativo) return;
-      ativo = true;
-      document.getElementById("btnIniciar").style.display = "none";
-      document.getElementById("btnParar").style.display = "inline-block";
-      document.getElementById("status").textContent = "🟢 Simulador ativo";
-      document.getElementById("log").innerHTML = "";
-      adicionarLog("🚀 Simulador iniciado!", "sucesso");
-
-      enviarLeituras(); // Primeira vez imediatamente
-      intervalo = setInterval(enviarLeituras, 5000); // A cada 5 segundos
-    });
+    // Inicia automaticamente
+    enviarLeituras();
+    adicionarLog("🚀 Primeira leitura enviada!", "sucesso");
+    intervalo = setInterval(enviarLeituras, 5000);
 
     document.getElementById("btnParar").addEventListener("click", () => {
       ativo = false;
@@ -177,7 +270,22 @@
       document.getElementById("btnIniciar").style.display = "inline-block";
       document.getElementById("btnParar").style.display = "none";
       document.getElementById("status").textContent = "🔴 Simulador parado";
+      document.getElementById("status").classList.remove("ativo");
       adicionarLog("⏹️ Simulador parado", "info");
+    });
+
+    document.getElementById("btnIniciar").addEventListener("click", () => {
+      if (ativo) return;
+      ativo = true;
+      document.getElementById("btnIniciar").style.display = "none";
+      document.getElementById("btnParar").style.display = "inline-block";
+      document.getElementById("status").textContent = "🟢 Simulador ativo";
+      document.getElementById("status").classList.add("ativo");
+      document.getElementById("log").innerHTML = "";
+
+      adicionarLog("🚀 Simulador reiniciado!", "sucesso");
+      enviarLeituras();
+      intervalo = setInterval(enviarLeituras, 5000);
     });
   </script>
 </body>
