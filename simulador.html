@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Simulador - Horta</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f5f7fa; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #2e8b57; }
+    .status { background: #f0fdf4; padding: 15px; border-radius: 6px; border-left: 4px solid #2e8b57; margin: 15px 0; }
+    .status.ativo { background: #dcfce7; color: #166534; }
+    button { background: #2e8b57; color: #fff; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:hover { opacity: 0.9; }
+    button.parar { background: #dc2626; }
+    .log { background: #f9faf8; padding: 15px; border-radius: 6px; max-height: 300px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+    .log div { margin: 5px 0; }
+    .log .sucesso { color: #16a34a; }
+    .log .erro { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌱 Simulador de Leituras - Horta</h1>
+    
+    <div class="status ativo">
+      <strong>Status:</strong> <span id="status">Aguardando inicialização...</span>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button id="btnIniciar">▶️ Iniciar Simulador</button>
+      <button id="btnParar" class="parar" style="display:none;">⏹️ Parar Simulador</button>
+    </div>
+
+    <h3>📊 Última Leitura:</h3>
+    <div style="background: #fbfdfe; padding: 15px; border-radius: 6px; border: 1px solid #edf2f7;">
+      <p><strong>🌡️ Temperatura:</strong> <span id="ultimaTemp">-- °C</span></p>
+      <p><strong>💧 Umidade:</strong> <span id="ultimaUmidade">-- %</span></p>
+      <p><strong>☀️ Luminosidade:</strong> <span id="ultimaLumi">-- lux</span></p>
+      <p><strong>🌱 pH:</strong> <span id="ultimaPH">-- </span></p>
+      <p><strong>⏰ Horário:</strong> <span id="ultimaHora">--:--:--</span></p>
+    </div>
+
+    <h3>📝 Log:</h3>
+    <div class="log" id="log">
+      <div>Aguardando inicialização...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const db = getFirestore();
+
+    let intervalo = null;
+    let ativo = false;
+
+    // Geradores
+    function gerarTemperatura() {
+      const base = 25;
+      const variacao = (Math.random() - 0.5) * 8;
+      return parseFloat((base + variacao).toFixed(2));
+    }
+
+    function gerarUmidade() {
+      const base = 65;
+      const variacao = (Math.random() - 0.5) * 40;
+      return Math.max(40, Math.min(85, Math.round(base + variacao)));
+    }
+
+    function gerarLuminosidade() {
+      const hora = new Date().getHours();
+      const lutbrilho = 6000 + Math.sin((hora / 24) * Math.PI) * 3000;
+      const variacao = (Math.random() - 0.5) * 1000;
+      return Math.max(100, Math.round(lutbrilho + variacao));
+    }
+
+    function gerarPH() {
+      const base = 6.8;
+      const variacao = (Math.random() - 0.5) * 1.2;
+      return parseFloat((base + variacao).toFixed(2));
+    }
+
+    function adicionarLog(msg, tipo = "info") {
+      const logEl = document.getElementById("log");
+      const div = document.createElement("div");
+      div.className = tipo;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    async function enviarLeituras() {
+      try {
+        const temperatura = gerarTemperatura();
+        const umidade = gerarUmidade();
+        const luminosidade = gerarLuminosidade();
+        const ph = gerarPH();
+
+        const dadosSensores = {
+          temperatura,
+          umidade,
+          luminosidade,
+          ph,
+          ultimaAtualizacao: new Date()
+        };
+
+        await setDoc(doc(db, "sensores", "horta"), dadosSensores);
+
+        // Atualizar UI
+        document.getElementById("ultimaTemp").textContent = temperatura + " °C";
+        document.getElementById("ultimaUmidade").textContent = umidade + " %";
+        document.getElementById("ultimaLumi").textContent = luminosidade + " lux";
+        document.getElementById("ultimaPH").textContent = ph;
+        document.getElementById("ultimaHora").textContent = new Date().toLocaleTimeString();
+
+        adicionarLog(`✅ Leituras enviadas: ${temperatura}°C | ${umidade}% | ${luminosidade}lux | pH ${ph}`, "sucesso");
+
+        // Atualizar histórico
+        await atualizarHistorico(temperatura, umidade, luminosidade, ph);
+
+      } catch (erro) {
+        console.error(erro);
+        adicionarLog(`❌ Erro: ${erro.message}`, "erro");
+      }
+    }
+
+    async function atualizarHistorico(temp, umidade, luminosidade, ph) {
+      try {
+        const snap = await getDoc(doc(db, "historico", "dados"));
+        let historico = snap.exists() ? snap.data() : { temperatura: [], umidade: [], luminosidade: [], ph: [] };
+
+        historico.temperatura.push(temp);
+        historico.umidade.push(umidade);
+        historico.luminosidade.push(luminosidade);
+        historico.ph.push(ph);
+
+        if (historico.temperatura.length > 168) {
+          historico.temperatura = historico.temperatura.slice(-168);
+          historico.umidade = historico.umidade.slice(-168);
+          historico.luminosidade = historico.luminosidade.slice(-168);
+          historico.ph = historico.ph.slice(-168);
+        }
+
+        await setDoc(doc(db, "historico", "dados"), historico);
+      } catch (erro) {
+        console.error("Erro ao atualizar histórico:", erro);
+      }
+    }
+
+    document.getElementById("btnIniciar").addEventListener("click", () => {
+      if (ativo) return;
+      ativo = true;
+      document.getElementById("btnIniciar").style.display = "none";
+      document.getElementById("btnParar").style.display = "inline-block";
+      document.getElementById("status").textContent = "🟢 Simulador ativo";
+      document.getElementById("log").innerHTML = "";
+      adicionarLog("🚀 Simulador iniciado!", "sucesso");
+
+      enviarLeituras(); // Primeira vez imediatamente
+      intervalo = setInterval(enviarLeituras, 5000); // A cada 5 segundos
+    });
+
+    document.getElementById("btnParar").addEventListener("click", () => {
+      ativo = false;
+      clearInterval(intervalo);
+      document.getElementById("btnIniciar").style.display = "inline-block";
+      document.getElementById("btnParar").style.display = "none";
+      document.getElementById("status").textContent = "🔴 Simulador parado";
+      adicionarLog("⏹️ Simulador parado", "info");
+    });
+  </script>
+</body>
+</html>

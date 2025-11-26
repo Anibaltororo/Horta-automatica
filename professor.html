@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Painel Professor - Horta</title>
+  <title>Painel do Professor - Horta</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
@@ -154,9 +154,9 @@
 
   <div class="main-content">
     <header class="topbar">
-      <h1 id="tituloPagina">Dashboard</h1>
+      <h1 id="tituloPagina">📊 Dashboard</h1>
       <div class="user-info">
-        <span id="nomeUsuario">Professor</span>
+        👨‍🏫 <span id="nomeUsuario">Professor</span>
       </div>
     </header>
 
@@ -196,13 +196,13 @@
       <!-- AVISOS -->
       <div id="avisos" class="pagina">
         <section class="caixa">
-          <h2>Publicar Aviso</h2>
+          <h2>📢 Publicar Aviso</h2>
           <input id="tituloAviso" type="text" placeholder="Título do aviso">
           <textarea id="msgAviso" placeholder="Mensagem..." rows="4"></textarea>
-          <button id="btnAviso" class="btn-primary">Publicar Aviso</button>
+          <button id="btnAviso" class="btn-primary">✓ Publicar Aviso</button>
           <small id="statusAviso" class="muted" style="display:block;margin-top:8px;"></small>
 
-          <h3 style="margin-top:20px;">Avisos Publicados</h3>
+          <h3>Avisos Publicados</h3>
           <div id="listaAvisos"></div>
         </section>
       </div>
@@ -218,17 +218,17 @@
       <!-- CURSOS -->
       <div id="cursos" class="pagina">
         <section class="caixa">
-          <h2>📚 Gerenciar Cursos</h2>
+          <h2>📚 Gerenciar Cursos de Plantagem</h2>
           <h3>Adicionar Novo Curso</h3>
           <input id="tituloCurso" type="text" placeholder="Título do curso">
           <input id="instrutorCurso" type="text" placeholder="Instrutor">
           <textarea id="descCurso" placeholder="Descrição..." rows="3"></textarea>
           <input id="duracaoCurso" type="text" placeholder="Duração (ex: 4 semanas)">
           <input id="nivelCurso" type="text" placeholder="Nível (iniciante, intermediário, avançado)">
-          <button id="btnAdicionarCurso" class="btn-primary">Adicionar Curso</button>
+          <button id="btnAdicionarCurso" class="btn-primary">✓ Adicionar Curso</button>
           <small id="statusCurso" class="muted" style="display:block;margin-top:8px;"></small>
 
-          <h3 style="margin-top:20px;">Cursos Cadastrados</h3>
+          <h3>Cursos Cadastrados</h3>
           <div id="listaCursos"></div>
         </section>
       </div>
@@ -241,11 +241,11 @@
           <textarea id="descricaoProjeto" placeholder="Descrição..." rows="4"></textarea>
           <textarea id="objetivosProjeto" placeholder="Objetivos..." rows="4"></textarea>
           <textarea id="atividadesProjeto" placeholder="Atividades principais..." rows="4"></textarea>
-          <button id="btnSalvarProjeto" class="btn-primary">Salvar Projeto</button>
+          <button id="btnSalvarProjeto" class="btn-primary">✓ Salvar Projeto</button>
           <small id="statusProjeto" class="muted" style="display:block;margin-top:8px;"></small>
 
-          <h3 style="margin-top:20px;">Pré-visualização</h3>
-          <div id="previewProjeto" class="caixa" style="background:#f9faf8;"></div>
+          <h3>Pré-visualização</h3>
+          <div id="previewProjeto" class="caixa" style="background:linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);"></div>
         </section>
       </div>
 
@@ -255,19 +255,19 @@
           <h2>📈 Gráficos e Estatísticas</h2>
           <div class="charts-grid">
             <div class="chart-container">
-              <h3>Temperatura (últimos 7 dias)</h3>
+              <h3>🌡️ Temperatura (últimos 7 dias)</h3>
               <canvas id="chartTemp"></canvas>
             </div>
             <div class="chart-container">
-              <h3>Umidade do Solo (últimos 7 dias)</h3>
+              <h3>💧 Umidade do Solo (últimos 7 dias)</h3>
               <canvas id="chartUmidade"></canvas>
             </div>
             <div class="chart-container">
-              <h3>Luminosidade (últimos 7 dias)</h3>
+              <h3>☀️ Luminosidade (últimos 7 dias)</h3>
               <canvas id="chartLumi"></canvas>
             </div>
             <div class="chart-container">
-              <h3>pH do Solo (últimos 7 dias)</h3>
+              <h3>🌱 pH do Solo (últimos 7 dias)</h3>
               <canvas id="chartPH"></canvas>
             </div>
           </div>
@@ -276,7 +276,7 @@
     </div>
 
     <footer class="footer">
-      <small>&copy; Horta Escolar - Educação e Tecnologia</small>
+      <small>&copy; 2025 Horta Escolar Automatizada | Educação e Tecnologia</small>
     </footer>
   </div>
 
