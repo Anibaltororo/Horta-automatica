@@ -53,12 +53,33 @@
       font-size: 14px;
       font-family: inherit;
       transition: all 0.3s;
+      box-sizing: border-box;
     }
     .form-group input:focus,
     .form-group select:focus {
       outline: none;
       border-color: #1b5e20;
       box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+    }
+    .campos-professor {
+      display: none;
+      background: #f0fdf4;
+      padding: 16px;
+      border-radius: 8px;
+      border: 2px solid #d0e8d8;
+      margin: 16px 0;
+    }
+    .campos-professor.show {
+      display: block;
+    }
+    .aviso-professor {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #92400e;
+      margin-bottom: 12px;
     }
     .btn-auth {
       width: 100%;
@@ -146,10 +167,21 @@
 
     <div class="form-group">
       <label>Tipo de Usuário</label>
-      <select id="tipo">
+      <select id="tipo" onchange="toggleCodigoAdmin()">
         <option value="aluno">👨‍🎓 Aluno</option>
         <option value="professor">👨‍🏫 Professor</option>
       </select>
+    </div>
+
+    <!-- Campos visíveis apenas para Professor -->
+    <div id="camposProfessor" class="campos-professor">
+      <div class="aviso-professor">
+        ⚠️ Apenas professores autorizados podem se registrar. Digite o código de administrador.
+      </div>
+      <div class="form-group">
+        <label>Código de Administrador</label>
+        <input id="codigoAdmin" type="password" placeholder="Digite o código secreto">
+      </div>
     </div>
 
     <button id="btnRegistrar" class="btn-auth">✨ Criar Conta</button>
@@ -177,8 +209,23 @@
     const auth = getAuth();
     const db = getFirestore();
 
+    // CÓDIGO DE ADMIN - VOCÊ PODE MUDAR ISSO
+    const CODIGO_ADMIN_CORRETO = "horta2025";
+
     const btnRegistrar = document.getElementById("btnRegistrar");
     const statusMsg = document.getElementById("statusMsg");
+
+    // Mostrar/esconder campos de professor
+    window.toggleCodigoAdmin = function() {
+      const tipo = document.getElementById("tipo").value;
+      const camposProfessor = document.getElementById("camposProfessor");
+      
+      if (tipo === "professor") {
+        camposProfessor.classList.add("show");
+      } else {
+        camposProfessor.classList.remove("show");
+      }
+    }
 
     btnRegistrar.addEventListener("click", async () => {
       const nome = document.getElementById("nome").value.trim();
@@ -186,10 +233,12 @@
       const senha = document.getElementById("senha").value;
       const confirmarSenha = document.getElementById("confirmarSenha").value;
       const tipo = document.getElementById("tipo").value;
+      const codigoAdmin = document.getElementById("codigoAdmin").value;
 
       statusMsg.classList.remove("sucesso", "erro");
       statusMsg.classList.add("show");
 
+      // Validações básicas
       if (!nome || !email || !senha) {
         statusMsg.textContent = "⚠️ Preencha todos os campos!";
         statusMsg.classList.add("erro");
@@ -206,6 +255,21 @@
         statusMsg.textContent = "⚠️ Senha deve ter mínimo 6 caracteres!";
         statusMsg.classList.add("erro");
         return;
+      }
+
+      // Validar código de admin para professor
+      if (tipo === "professor") {
+        if (!codigoAdmin) {
+          statusMsg.textContent = "⚠️ Digite o código de administrador!";
+          statusMsg.classList.add("erro");
+          return;
+        }
+
+        if (codigoAdmin !== CODIGO_ADMIN_CORRETO) {
+          statusMsg.textContent = "❌ Código de administrador incorreto!";
+          statusMsg.classList.add("erro");
+          return;
+        }
       }
 
       btnRegistrar.disabled = true;

@@ -1,8 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs, doc, getDoc, orderBy, query
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
@@ -17,325 +15,145 @@ if (!getApps().length) initializeApp(firebaseConfig);
 const db = getFirestore();
 const auth = getAuth();
 
-let usuarioAtual = null;
-let chartTemp = null, chartUmidade = null, chartLumi = null, chartPH = null;
-
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
-    return;
-  }
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (snap.exists()) {
-    usuarioAtual = snap.data();
-    document.getElementById("nomeUsuario").textContent = usuarioAtual.nome || "Usuário";
   }
 });
 
-const btnSair = document.getElementById("btnSair");
-if (btnSair) {
-  btnSair.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "index.html";
-  });
-}
-
-window.mudarPagina = function(pagina) {
-  document.querySelectorAll(".pagina").forEach(el => el.classList.remove("active"));
-  document.querySelectorAll(".menu-btn").forEach(el => el.classList.remove("active"));
-  document.getElementById(pagina).classList.add("active");
-  event.target.classList.add("active");
-
-  const titulos = {
-    dashboard: "📊 Dashboard",
-    avisos: "📢 Avisos do Professor",
-    cursos: "📚 Cursos de Plantagem",
-    projeto: "🌿 Sobre o Projeto",
-    graficos: "📈 Gráficos e Estatísticas",
-    feedback: "💬 Meus Feedbacks"
-  };
-  document.getElementById("tituloPagina").textContent = titulos[pagina] || "Horta";
-
-  if (pagina === "avisos") carregarAvisos();
-  if (pagina === "cursos") carregarCursos();
-  if (pagina === "projeto") carregarProjeto();
-  if (pagina === "graficos") carregarGraficos();
-  if (pagina === "feedback") carregarMinhasFeedbacks();
-}
-
-const btnEnviar = document.getElementById("btnEnviar");
-const feedbackEl = document.getElementById("feedback");
-const funcaoEl = document.getElementById("funcao");
-const listaEl = document.getElementById("lista");
-const statusMsg = document.getElementById("statusMsg");
-
-if (btnEnviar) {
-  btnEnviar.addEventListener("click", async () => {
-    const feedback = feedbackEl.value.trim();
-    const funcao = funcaoEl.value.trim();
-    if (!feedback) {
-      statusMsg.textContent = "Descreva a atividade.";
-      return;
-    }
-    statusMsg.textContent = "Salvando...";
-    try {
-      await addDoc(collection(db, "feedbacks"), {
-        turma: usuarioAtual?.turma || "Sem turma",
-        aluno: usuarioAtual?.nome || "Anônimo",
-        feedback,
-        funcao,
-        data: new Date(),
-        respondido: false
-      });
-      feedbackEl.value = "";
-      funcaoEl.value = "";
-      statusMsg.textContent = "✓ Registro salvo!";
-      carregarRegistros();
-    } catch (e) {
-      console.error(e);
-      statusMsg.textContent = "❌ Erro ao salvar.";
-    }
-    setTimeout(() => statusMsg.textContent = "", 2500);
-  });
-}
-
-function formatDate(ts) {
-  if (!ts) return "";
-  try {
-    if (typeof ts.toDate === "function") return ts.toDate().toLocaleString();
-    if (ts && ts.seconds && typeof ts.toMillis === "function") return new Date(ts.toMillis()).toLocaleString();
-    return new Date(ts).toLocaleString();
-  } catch { return ""; }
-}
-
-async function carregarRegistros() {
-  if (!listaEl) return;
-  listaEl.innerHTML = "<p class='muted'>Carregando registros...</p>";
-  try {
-    const q = query(collection(db, "feedbacks"), orderBy("data", "desc"));
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      listaEl.innerHTML = "<p class='muted'>Sem registros ainda.</p>";
-      return;
-    }
-    listaEl.innerHTML = "";
-    snap.forEach(d => {
-      const f = d.data();
-      const item = document.createElement("div");
-      item.className = "registro";
-      item.innerHTML = `
-        <b>${f.turma || "Turma não informada"}</b> - ${f.aluno || "Aluno"}
-        <div class="meta">${formatDate(f.data)} • ${f.funcao || ""}</div>
-        <div>${(f.feedback || "").replace(/\n/g, "<br>")}</div>
-        ${f.respondido ? '<div style="color:#16a34a;font-size:12px;margin-top:6px;">✓ Respondido</div>' : ''}
-      `;
-      listaEl.appendChild(item);
-    });
-  } catch (e) {
-    console.error(e);
-    listaEl.innerHTML = "<p class='muted'>Erro ao carregar registros.</p>";
-  }
-}
-
-async function carregarAvisos() {
-  const avisosList = document.getElementById("avisosList");
-  if (!avisosList) return;
-  avisosList.innerHTML = "<p class='muted'>Carregando avisos...</p>";
-  try {
-    const q = query(collection(db, "avisos"), orderBy("data", "desc"));
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      avisosList.innerHTML = "<p class='muted'>Sem avisos.</p>";
-      return;
-    }
-    avisosList.innerHTML = "";
-    snap.forEach(d => {
-      const a = d.data();
-      const node = document.createElement("div");
-      node.className = "aviso";
-      node.innerHTML = `
-        <div style="font-weight:700;color:#1b5e20;margin-bottom:8px;">${a.titulo || "Aviso"}</div>
-        <div class="muted" style="font-size:12px;margin-bottom:8px;">${formatDate(a.data)}</div>
-        <div style="margin-top:6px">${(a.msg || "").replace(/\n/g, "<br>")}</div>
-      `;
-      avisosList.appendChild(node);
-    });
-  } catch (e) {
-    console.error(e);
-    avisosList.innerHTML = "<p class='muted'>Erro ao carregar avisos.</p>";
-  }
-}
-
+// ===== CARREGAR CURSOS =====
 async function carregarCursos() {
-  const cursosList = document.getElementById("listaCursos");
-  if (!cursosList) return;
-  cursosList.innerHTML = "<p class='muted'>Carregando cursos...</p>";
+  const listaCursos = document.getElementById("listaCursos");
+  if (!listaCursos) return;
+  
+  listaCursos.innerHTML = "<p class='muted'>Carregando cursos...</p>";
+  
   try {
     const snap = await getDocs(collection(db, "cursos"));
+    listaCursos.innerHTML = "";
+    
     if (snap.empty) {
-      cursosList.innerHTML = "<p class='muted'>Sem cursos cadastrados.</p>";
+      listaCursos.innerHTML = "<p class='muted'>Nenhum curso disponível no momento.</p>";
       return;
     }
-    cursosList.innerHTML = "";
-    snap.forEach(d => {
-      const c = d.data();
-      const node = document.createElement("div");
-      node.className = "curso-item";
-      node.innerHTML = `
-        <h3>${c.titulo || "Curso"}</h3>
-        <p><strong>Instrutor:</strong> ${c.instrutor || "-"}</p>
-        <p><strong>Descrição:</strong> ${(c.descricao || "").replace(/\n/g, "<br>")}</p>
-        <p><strong>Duração:</strong> ${c.duracao || "-"}</p>
-        <p><strong>Nível:</strong> ${c.nivel || "-"}</p>
+
+    snap.forEach(doc => {
+      const curso = doc.data();
+      const cursoId = doc.id;
+      
+      const div = document.createElement("div");
+      div.className = "curso-item";
+      div.style.cssText = `
+        background: linear-gradient(135deg, #f9fdf8 0%, #f0fdf4 100%);
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #2e8b57;
+        margin-bottom: 16px;
+        transition: all 0.3s;
       `;
-      cursosList.appendChild(node);
+      
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 8px 0; color: #1b5e20; font-size: 18px;">📚 ${curso.titulo || "Sem título"}</h3>
+            <p style="margin: 6px 0; color: #666;"><strong>👨‍🏫 Instrutor:</strong> ${curso.instrutor || "Não especificado"}</p>
+            <p style="margin: 6px 0; color: #666;"><strong>📝 Descrição:</strong> ${(curso.descricao || "").replace(/\n/g, "<br>")}</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+              <div style="background: #e8f5e9; padding: 10px; border-radius: 6px;">
+                <strong style="color: #1b5e20;">⏱️ Duração</strong>
+                <div style="color: #666;">${curso.duracao || "-"}</div>
+              </div>
+              <div style="background: #e8f5e9; padding: 10px; border-radius: 6px;">
+                <strong style="color: #1b5e20;">📊 Nível</strong>
+                <div style="color: #666;">${curso.nivel || "-"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="inscreverCurso('${cursoId}', '${curso.titulo}')" style="margin-top: 12px; width: 100%;">✅ Inscrever-se</button>
+      `;
+      
+      listaCursos.appendChild(div);
     });
   } catch (e) {
-    console.error(e);
-    cursosList.innerHTML = "<p class='muted'>Erro ao carregar cursos.</p>";
+    console.error("Erro ao carregar cursos:", e);
+    listaCursos.innerHTML = "<p class='muted'>❌ Erro ao carregar cursos.</p>";
   }
 }
 
+// ===== INSCREVER EM CURSO =====
+window.inscreverCurso = async function(cursoId, nomeCurso) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("❌ Você precisa estar logado!");
+    return;
+  }
+
+  try {
+    // Aqui você pode guardar a inscrição no Firebase se desejar
+    alert(`✅ Você se inscreveu em "${nomeCurso}"!`);
+    console.log(`Aluno ${user.uid} inscrito no curso ${cursoId}`);
+  } catch (e) {
+    console.error(e);
+    alert("❌ Erro ao inscrever.");
+  }
+}
+
+// ===== CARREGAR PROJETO =====
 async function carregarProjeto() {
-  const infoProjeto = document.getElementById("infoProjeto");
-  if (!infoProjeto) return;
-  infoProjeto.innerHTML = "<p class='muted'>Carregando...</p>";
   try {
     const snap = await getDoc(doc(db, "projeto", "info"));
+    const infoProjeto = document.getElementById("infoProjeto");
+    
+    if (!infoProjeto) return;
+    
     if (snap.exists()) {
       const p = snap.data();
       infoProjeto.innerHTML = `
-        <h3 style="color:#1b5e20;margin-top:0;">${p.titulo || "Projeto Horta"}</h3>
-        <p>${(p.descricao || "").replace(/\n/g, "<br>")}</p>
-        <h4 style="color:#2e8b57;margin-top:16px;">Objetivos:</h4>
-        <p>${(p.objetivos || "").replace(/\n/g, "<br>")}</p>
-        <h4 style="color:#2e8b57;margin-top:16px;">Atividades Principais:</h4>
-        <p>${(p.atividades || "").replace(/\n/g, "<br>")}</p>
-      `;
-    } else {
-      infoProjeto.innerHTML = "<p style='color:#999;'>O professor ainda não preencheu as informações do projeto.</p>";
-    }
-  } catch (e) {
-    console.error(e);
-    infoProjeto.innerHTML = "<p class='muted'>Erro ao carregar informações.</p>";
-  }
-}
+        <h3 style="color: #1b5e20; margin-top: 0; font-size: 24px;">${p.titulo || "Projeto da Horta"}</h3>
+        
+        <div style="margin: 20px 0; padding: 16px; background: #fff; border-radius: 8px; border-left: 4px solid #2e8b57;">
+          <h4 style="color: #2e8b57; margin-top: 0;">📋 Descrição</h4>
+          <p style="line-height: 1.6; color: #333;">${(p.descricao || "").replace(/\n/g, "<br>")}</p>
+        </div>
 
-async function carregarSensores() {
-  try {
-    const snap = await getDoc(doc(db, "sensores", "horta"));
-    if (snap.exists()) {
-      const dados = snap.data();
-      document.getElementById("temp").textContent = dados.temperatura ? dados.temperatura.toFixed(1) + " °C" : "-- °C";
-      document.getElementById("umidade").textContent = dados.umidade ? dados.umidade.toFixed(1) + " %" : "-- %";
-      document.getElementById("lumi").textContent = dados.luminosidade ? dados.luminosidade.toFixed(0) + " lux" : "-- lux";
-      document.getElementById("ph").textContent = dados.ph ? dados.ph.toFixed(2) : "-- ";
-    }
-  } catch (e) {
-    console.error("Erro ao carregar sensores:", e);
-  }
-}
+        <div style="margin: 20px 0; padding: 16px; background: #fff; border-radius: 8px; border-left: 4px solid #1b5e20;">
+          <h4 style="color: #1b5e20; margin-top: 0;">🎯 Objetivos</h4>
+          <p style="line-height: 1.6; color: #333;">${(p.objetivos || "").replace(/\n/g, "<br>")}</p>
+        </div>
 
-async function carregarGraficos() {
-  try {
-    const snap = await getDoc(doc(db, "historico", "dados"));
-    if (snap.exists()) {
-      const historico = snap.data();
-      const temp = historico.temperatura || [];
-      const umidade = historico.umidade || [];
-      const luminosidade = historico.luminosidade || [];
-      const ph = historico.ph || [];
-      const labels = Array(7).fill(0).map((_, i) => `Dia ${i + 1}`);
-
-      if (chartTemp) chartTemp.destroy();
-      chartTemp = new Chart(document.getElementById("chartTemp"), {
-        type: "line",
-        data: { labels, datasets: [{ label: "Temperatura (°C)", data: temp.slice(-7), borderColor: "#f59e0b", backgroundColor: "rgba(245, 158, 11, 0.1)", tension: 0.4, fill: true }] },
-        options: { responsive: true, plugins: { legend: { display: true } } }
-      });
-
-      if (chartUmidade) chartUmidade.destroy();
-      chartUmidade = new Chart(document.getElementById("chartUmidade"), {
-        type: "line",
-        data: { labels, datasets: [{ label: "Umidade (%)", data: umidade.slice(-7), borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.1)", tension: 0.4, fill: true }] },
-        options: { responsive: true, plugins: { legend: { display: true } } }
-      });
-
-      if (chartLumi) chartLumi.destroy();
-      chartLumi = new Chart(document.getElementById("chartLumi"), {
-        type: "line",
-        data: { labels, datasets: [{ label: "Luminosidade (lux)", data: luminosidade.slice(-7), borderColor: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.1)", tension: 0.4, fill: true }] },
-        options: { responsive: true, plugins: { legend: { display: true } } }
-      });
-
-      if (chartPH) chartPH.destroy();
-      chartPH = new Chart(document.getElementById("chartPH"), {
-        type: "line",
-        data: { labels, datasets: [{ label: "pH", data: ph.slice(-7), borderColor: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.1)", tension: 0.4, fill: true }] },
-        options: { responsive: true, plugins: { legend: { display: true } } }
-      });
-    }
-  } catch (e) {
-    console.error("Erro ao carregar gráficos:", e);
-  }
-}
-
-async function carregarMinhasFeedbacks() {
-  const minhasFeedbacks = document.getElementById("minhasFeedbacks");
-  if (!minhasFeedbacks) return;
-  minhasFeedbacks.innerHTML = "<p class='muted'>Carregando...</p>";
-  try {
-    const q = query(collection(db, "feedbacks"), orderBy("data", "desc"));
-    const snap = await getDocs(q);
-    minhasFeedbacks.innerHTML = "";
-    if (snap.empty) {
-      minhasFeedbacks.innerHTML = "<p class='muted'>Você não enviou feedbacks ainda.</p>";
-      return;
-    }
-    snap.forEach(d => {
-      const f = d.data();
-      const id = d.id;
-      const item = document.createElement("div");
-      item.className = "feedback-item";
-      item.innerHTML = `
-        <b>${f.feedback}</b>
-        <div class="meta">${formatDate(f.data)} • Função: ${f.funcao || "-"}</div>
-        ${f.respondido ? '<div style="color:#16a34a;margin-top:8px;font-weight:600;">✓ Professor respondeu</div>' : '<div style="color:#f59e0b;margin-top:8px;">⏳ Aguardando resposta</div>'}
-        <div id="respostas-${id}" style="margin-top:10px;"></div>
-      `;
-      minhasFeedbacks.appendChild(item);
-      carregarRespostasAluno(id);
-    });
-  } catch (e) {
-    console.error(e);
-    minhasFeedbacks.innerHTML = "<p class='muted'>Erro ao carregar feedbacks.</p>";
-  }
-}
-
-async function carregarRespostasAluno(feedbackId) {
-  const container = document.getElementById(`respostas-${feedbackId}`);
-  if (!container) return;
-  try {
-    const snap = await getDocs(collection(db, "feedbacks", feedbackId, "respostas"));
-    if (snap.empty) return;
-    snap.forEach(d => {
-      const r = d.data();
-      const div = document.createElement("div");
-      div.className = "resposta-aluno";
-      div.innerHTML = `
-        <div style="background:#f0f9ff;padding:10px;border-radius:6px;border-left:4px solid #3b82f6;">
-          <small style="color:#1e40af;font-weight:600;">Professor respondeu</small>
-          <div style="margin-top:6px;">${(r.texto || "").replace(/\n/g, "<br>")}</div>
-          <small style="color:#6b7280;margin-top:4px;display:block;">${formatDate(r.data)}</small>
+        <div style="margin: 20px 0; padding: 16px; background: #fff; border-radius: 8px; border-left: 4px solid #059669;">
+          <h4 style="color: #059669; margin-top: 0;">🌱 Atividades Principais</h4>
+          <p style="line-height: 1.6; color: #333;">${(p.atividades || "").replace(/\n/g, "<br>")}</p>
         </div>
       `;
-      container.appendChild(div);
-    });
+    } else {
+      infoProjeto.innerHTML = '<p class="muted" style="text-align: center; padding: 40px;">📭 Nenhum projeto foi criado ainda pelo professor.</p>';
+    }
   } catch (e) {
-    console.error(e);
+    console.error("Erro ao carregar projeto:", e);
   }
 }
 
-carregarRegistros();
-carregarSensores();
-setInterval(carregarSensores, 5000); // Atualizar a cada 5s
+// ===== MUDAR DE PÁGINA =====
+window.mudarPagina = function(pagina) {
+  document.querySelectorAll(".pagina").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".menu-btn").forEach(el => el.classList.remove("active"));
+  
+  const paginaEl = document.getElementById(pagina);
+  if (paginaEl) {
+    paginaEl.classList.add("active");
+  }
+  
+  if (event && event.target) {
+    event.target.classList.add("active");
+  }
+
+  // Carregar dados quando mudar de página
+  if (pagina === "cursos") carregarCursos();
+  if (pagina === "projeto") carregarProjeto();
+}
+
+// Carregar tudo ao iniciar
+carregarCursos();
+carregarProjeto();
