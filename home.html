@@ -440,8 +440,8 @@
   <!-- HERO -->
   <section class="hero">
     <h1>🌿 Bem-vindo à Horta Escolar</h1>
-    <p>Aprenda sobre sustentabilidade, cultivo de plantas e trabalho em equipe através de uma experiência prática e educativa.</p>
-    <button class="btn-cta" onclick="abrirModalLogin()">Comece Agora</button>
+    <p id="textoHero">Aprenda sobre sustentabilidade, cultivo de plantas e trabalho em equipe através de uma experiência prática e educativa.</p>
+    <button class="btn-cta" id="btnHeroLogin" onclick="abrirModalLogin()">Comece Agora</button>
   </section>
 
   <!-- SOBRE -->
@@ -511,7 +511,7 @@
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
@@ -525,6 +525,34 @@
     if (!getApps().length) initializeApp(firebaseConfig);
     const db = getFirestore();
     const auth = getAuth();
+
+    // ===== VERIFICAR SE JÁ ESTÁ LOGADO =====
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Usuário logado, buscar tipo
+        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        try {
+          const snap = await getDoc(doc(db, "users", user.uid));
+          if (snap.exists()) {
+            const tipo = snap.data().tipo;
+            const nome = snap.data().nome || user.email;
+            
+            // Mostrar bem-vindo
+            document.querySelector(".hero h1").textContent = `🌿 Bem-vindo, ${nome}!`;
+            document.getElementById("textoHero").textContent = `Você está logado como ${tipo}. Redirecionando...`;
+            document.getElementById("btnHeroLogin").textContent = "⏳ Entrando...";
+            document.getElementById("btnHeroLogin").disabled = true;
+            
+            // Redirecionar após 2 segundos
+            setTimeout(() => {
+              window.location.href = tipo === "professor" ? "professor.html" : "aluno.html";
+            }, 2000);
+          }
+        } catch (e) {
+          console.error("Erro ao verificar tipo:", e);
+        }
+      }
+    });
 
     // ===== CARREGAR CURSOS =====
     async function carregarCursos() {
@@ -568,11 +596,8 @@
       document.getElementById("modalLogin").classList.remove("show");
     }
 
-    // Fechar modal ao clicar fora
     document.getElementById("modalLogin").addEventListener("click", (e) => {
-      if (e.target.id === "modalLogin") {
-        fecharModalLogin();
-      }
+      if (e.target.id === "modalLogin") fecharModalLogin();
     });
 
     // ===== LOGIN =====
@@ -598,16 +623,19 @@
         const resultado = await signInWithEmailAndPassword(auth, email, senha);
         const user = resultado.user;
 
-        // Buscar tipo de usuário
         const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
         const snap = await getDoc(doc(db, "users", user.uid));
 
         if (snap.exists()) {
           const tipo = snap.data().tipo;
+          const nome = snap.data().nome || user.email;
+          statusMsg.textContent = `✅ Bem-vindo, ${nome}!`;
+          statusMsg.classList.add("show");
+          
           fecharModalLogin();
           setTimeout(() => {
             window.location.href = tipo === "professor" ? "professor.html" : "aluno.html";
-          }, 500);
+          }, 1500);
         }
       } catch (erro) {
         let mensagem = "❌ Erro ao fazer login.";
@@ -622,12 +650,10 @@
       }
     });
 
-    // Enter para fazer login
     document.getElementById("senha").addEventListener("keypress", (e) => {
       if (e.key === "Enter") document.getElementById("btnLogin").click();
     });
 
-    // Carregar cursos ao iniciar
     carregarCursos();
   </script>
 </body>

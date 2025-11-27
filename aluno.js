@@ -123,7 +123,7 @@ async function carregarAvisos() {
   }
 }
 
-// Função para reagir ao aviso
+// Função para reagir ao aviso (LIMITA A 1 POR EMOJI)
 window.reagirAviso = async function(avisoId, reacao) {
   if (!usuarioAtual) {
     alert("Faça login para reagir.");
@@ -131,54 +131,38 @@ window.reagirAviso = async function(avisoId, reacao) {
   }
   
   try {
-    // Verificar se já reagiu
+    // Buscar reações do usuário neste aviso
     const reacaoSnap = await getDocs(collection(db, "avisos", avisoId, "reacoes"));
-    let jaReagiu = false;
-    let docReacaoAntiga = null;
+    let reacaoExistente = null;
+    let docIdExistente = null;
     
     reacaoSnap.forEach(d => {
       const data = d.data();
-      if (data.uid === usuarioAtual.uid) {
-        jaReagiu = true;
-        docReacaoAntiga = d.id;
+      if (data.uid === usuarioAtual.uid && data.reacao === reacao) {
+        reacaoExistente = d.id;
+        docIdExistente = d.id;
       }
     });
     
-    if (jaReagiu) {
-      // Remover reação anterior
-      await deleteDoc(doc(db, "avisos", avisoId, "reacoes", docReacaoAntiga));
-      
-      // Decrementar contador
-      const avisoDoc = await getDoc(doc(db, "avisos", avisoId));
-      if (avisoDoc.exists()) {
-        const data = avisoDoc.data();
-        const reacoes = data.reacoes || {};
-        const reacaoAntiga = reacoes[Object.keys(reacoes).find(k => {
-          const snap = getDocs(collection(db, "avisos", avisoId, "reacoes"));
-          return false;
-        })];
-      }
-    }
-    
-    // Adicionar nova reação
-    await addDoc(collection(db, "avisos", avisoId, "reacoes"), {
-      uid: usuarioAtual.uid,
-      reacao,
-      data: new Date()
-    });
-    
-    // Atualizar contador
     const avisoDocRef = doc(db, "avisos", avisoId);
     const avisoData = await getDoc(avisoDocRef);
-    const reacoes = avisoData.data().reacoes || {};
-    reacoes[reacao] = (reacoes[reacao] || 0) + 1;
+    let reacoes = avisoData.data().reacoes || {};
+    
+    if (reacaoExistente) {
+      // REMOVER reação (clicou novamente)
+      await deleteDoc(doc(db, "avisos", avisoId, "reacoes", docIdExistente));
+      reacoes[reacao] = Math.max(0, (reacoes[reacao] || 1) - 1);
+    } else {
+      // Adicionar nova reação
+      await addDoc(collection(db, "avisos", avisoId, "reacoes"), {
+        uid: usuarioAtual.uid,
+        reacao,
+        data: new Date()
+      });
+      reacoes[reacao] = (reacoes[reacao] || 0) + 1;
+    }
     
     await updateDoc(avisoDocRef, { reacoes });
-    
-    // Atualizar UI
-    const countEl = document.getElementById(`count-${avisoId}-${reacao}`);
-    if (countEl) countEl.textContent = reacoes[reacao];
-    
     carregarAvisos();
   } catch (e) {
     console.error("Erro ao reagir:", e);
@@ -318,6 +302,9 @@ async function carregarComentariosCurso(cursoId) {
     
     snap.forEach(d => {
       const com = d.data();
+      const docId = d.id;
+      const ehMeu = usuarioAtual && com.uid === usuarioAtual.uid;
+      
       const el = document.createElement("div");
       el.style.cssText = `
         background: #fff;
@@ -325,11 +312,18 @@ async function carregarComentariosCurso(cursoId) {
         border-radius: 6px;
         margin-bottom: 8px;
         border-left: 3px solid #2e8b57;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
       `;
+      
       el.innerHTML = `
-        <strong style="color:#1b5e20; font-size:13px;">${com.nome || "Anônimo"}</strong>
-        <div style="font-size:11px; color:#999; margin-top:2px;">${formatDate(com.data)}</div>
-        <p style="margin:6px 0; color:#555; font-size:13px;">${com.texto}</p>
+        <div style="flex:1;">
+          <strong style="color:#1b5e20; font-size:13px;">${com.nome || "Anônimo"}</strong>
+          <div style="font-size:11px; color:#999; margin-top:2px;">${formatDate(com.data)}</div>
+          <p style="margin:6px 0; color:#555; font-size:13px;">${com.texto}</p>
+        </div>
+        ${ehMeu ? `<button onclick="deletarComentario('${cursoAtualModal}', '${docId}')" style="background:#fee2e2; color:#c33; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px; margin-left:8px;">🗑️ Delete</button>` : ""}
       `;
       lista.appendChild(el);
     });
@@ -339,38 +333,16 @@ async function carregarComentariosCurso(cursoId) {
   }
 }
 
-// Enviar comentário
-document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "btnInscricao" && !e.target.disabled) {
-    inscreverCurso();
-  }
-  if (e.target && e.target.id === "btnEnviarComentario") {
-    enviarComentarioCurso();
-  }
-});
-
-async function enviarComentarioCurso() {
-  if (!usuarioAtual) { alert("Faça login para comentar."); return; }
-  if (!cursoAtualModal) return;
-  
-  const input = document.getElementById("comentarioInput");
-  const texto = input.value.trim();
-  
-  if (!texto) { alert("Escreva um comentário."); return; }
+// Deletar comentário próprio
+window.deletarComentario = async function(cursoId, comentarioId) {
+  if (!confirm("Deletar este comentário?")) return;
   
   try {
-    await addDoc(collection(db, "cursos", cursoAtualModal, "comentarios"), {
-      uid: usuarioAtual.uid,
-      nome: usuarioAtual.displayName || usuarioAtual.email,
-      texto,
-      data: new Date()
-    });
-    
-    input.value = "";
-    carregarComentariosCurso(cursoAtualModal);
+    await deleteDoc(doc(db, "cursos", cursoId, "comentarios", comentarioId));
+    carregarComentariosCurso(cursoId);
   } catch (e) {
     console.error(e);
-    alert("Erro ao enviar comentário.");
+    alert("Erro ao deletar comentário.");
   }
 }
 

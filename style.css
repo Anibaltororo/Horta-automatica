@@ -420,3 +420,8 @@ body {
   color: #0b6b33;
   border-radius: 8px;
 }
+
+/* Botão delete comentário */
+button[onclick*="deletarComentario"]:hover {
+  background: #fecaca !important;
+}
