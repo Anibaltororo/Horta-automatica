@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meu Perfil - Horta</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">🌱 Horta</div>
+    <nav class="menu">
+      <button class="menu-btn" onclick="window.location.href='aluno.html'">← Voltar</button>
+    </nav>
+    <button id="btnSair" class="btn-sair">🚪 Sair</button>
+  </div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h1>👤 Meu Perfil</h1>
+    </header>
+
+    <div class="container">
+      <div class="caixa">
+        <h2>Informações Pessoais</h2>
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input id="nome" type="text" placeholder="Seu nome">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="email" type="email" readonly>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Usuário</label>
+          <input id="tipo" type="text" readonly>
+        </div>
+        <button id="btnSalvar" class="btn-primary" style="margin-top: 16px;">💾 Salvar Alterações</button>
+        <div id="statusPerfil" class="status-msg"></div>
+      </div>
+
+      <div class="caixa">
+        <h2>Segurança</h2>
+        <button class="btn-delete" onclick="alterarSenha()">🔐 Alterar Senha</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) window.location.href = "index.html";
+      else {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const userData = snap.data();
+          document.getElementById("nome").value = userData.nome || "";
+          document.getElementById("email").value = user.email;
+          document.getElementById("tipo").value = userData.tipo || "aluno";
+        }
+      }
+    });
+
+    document.getElementById("btnSair").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    });
+
+    document.getElementById("btnSalvar").addEventListener("click", async () => {
+      const user = auth.currentUser;
+      const nome = document.getElementById("nome").value.trim();
+      const status = document.getElementById("statusPerfil");
+
+      if (!nome) {
+        status.textContent = "⚠️ Preencha o nome!";
+        status.className = "status-msg erro";
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, "users", user.uid), { nome });
+        status.textContent = "✅ Perfil atualizado!";
+        status.className = "status-msg sucesso";
+        setTimeout(() => status.textContent = "", 2500);
+      } catch (e) {
+        status.textContent = "❌ Erro ao salvar.";
+        status.className = "status-msg erro";
+      }
+    });
+
+    window.alterarSenha = async () => {
+      const novaSenha = prompt("Digite a nova senha (mínimo 6 caracteres):");
+      if (!novaSenha || novaSenha.length < 6) return;
+
+      try {
+        await updatePassword(auth.currentUser, novaSenha);
+        alert("✅ Senha alterada com sucesso!");
+      } catch (e) {
+        alert("❌ Erro: " + e.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notificações - Horta</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .notificacao {
+      background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+      border-left: 4px solid #fbbf24;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      transition: all 0.3s;
+    }
+    .notificacao:hover {
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+      transform: translateX(4px);
+    }
+    .notificacao.lida {
+      opacity: 0.7;
+    }
+    .notificacao-titulo {
+      font-weight: 700;
+      color: #92400e;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .notificacao-msg {
+      color: #78350f;
+      line-height: 1.5;
+    }
+    .notificacao-meta {
+      font-size: 12px;
+      color: #a16207;
+      margin-top: 8px;
+    }
+    .btn-marcar-lida {
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #fbbf24;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">🌱 Horta</div>
+    <nav class="menu">
+      <button class="menu-btn active" onclick="mudarPagina('notificacoes')">🔔 Notificações</button>
+      <button class="menu-btn" onclick="irPara('aluno')">← Voltar</button>
+    </nav>
+    <button id="btnSair" class="btn-sair">🚪 Sair</button>
+  </div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h1>🔔 Suas Notificações</h1>
+    </header>
+
+    <div class="container">
+      <div class="caixa">
+        <div id="listaNotificacoes">
+          <p class="muted">Carregando notificações...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const db = getFirestore();
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) window.location.href = "index.html";
+      else carregarNotificacoes();
+    });
+
+    async function carregarNotificacoes() {
+      try {
+        const q = query(collection(db, "avisos"), orderBy("data", "desc"));
+        const snap = await getDocs(q);
+        const lista = document.getElementById("listaNotificacoes");
+        lista.innerHTML = "";
+
+        if (snap.empty) {
+          lista.innerHTML = "<p class='muted'>Sem notificações no momento.</p>";
+          return;
+        }
+
+        snap.forEach(doc => {
+          const aviso = doc.data();
+          const div = document.createElement("div");
+          div.className = "notificacao";
+          div.innerHTML = `
+            <div class="notificacao-titulo">📢 ${aviso.titulo}</div>
+            <div class="notificacao-msg">${aviso.msg}</div>
+            <div class="notificacao-meta">⏰ ${new Date(aviso.data.toDate()).toLocaleString()}</div>
+          `;
+          lista.appendChild(div);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    window.irPara = function(pagina) {
+      if (pagina === "aluno") window.location.href = "aluno.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Registro - Horta</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f7f4 0%, #e8f5e9 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+    .auth-container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(27, 94, 32, 0.15);
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-container h1 {
+      color: #1b5e20;
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .auth-container p {
+      color: #666;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #d0e8d8;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #1b5e20;
+      box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+    }
+    .btn-auth {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1b5e20 0%, #2e8b57 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 16px;
+    }
+    .btn-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(27, 94, 32, 0.3);
+    }
+    .btn-auth:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .link-auth {
+      text-align: center;
+      margin-top: 16px;
+      color: #666;
+    }
+    .link-auth a {
+      color: #1b5e20;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .link-auth a:hover {
+      color: #2e8b57;
+    }
+    .status-msg {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .status-msg.show {
+      display: block;
+    }
+    .status-msg.sucesso {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+    .status-msg.erro {
+      background: #fee2e2;
+      color: #c33;
+      border: 1px solid #fca5a5;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>🌱 Criar Conta</h1>
+    <p>Junte-se à nossa horta escolar</p>
+    
+    <div id="statusMsg" class="status-msg"></div>
+
+    <div class="form-group">
+      <label>Nome Completo</label>
+      <input id="nome" type="text" placeholder="Ex: João Silva">
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="seu@email.com">
+    </div>
+
+    <div class="form-group">
+      <label>Senha</label>
+      <input id="senha" type="password" placeholder="Mínimo 6 caracteres">
+    </div>
+
+    <div class="form-group">
+      <label>Confirme a Senha</label>
+      <input id="confirmarSenha" type="password" placeholder="Confirme sua senha">
+    </div>
+
+    <div class="form-group">
+      <label>Tipo de Usuário</label>
+      <select id="tipo">
+        <option value="aluno">👨‍🎓 Aluno</option>
+        <option value="professor">👨‍🏫 Professor</option>
+      </select>
+    </div>
+
+    <button id="btnRegistrar" class="btn-auth">✨ Criar Conta</button>
+
+    <div class="link-auth">
+      Já tem conta? <a href="index.html">Faça login aqui</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const btnRegistrar = document.getElementById("btnRegistrar");
+    const statusMsg = document.getElementById("statusMsg");
+
+    btnRegistrar.addEventListener("click", async () => {
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const confirmarSenha = document.getElementById("confirmarSenha").value;
+      const tipo = document.getElementById("tipo").value;
+
+      statusMsg.classList.remove("sucesso", "erro");
+      statusMsg.classList.add("show");
+
+      if (!nome || !email || !senha) {
+        statusMsg.textContent = "⚠️ Preencha todos os campos!";
+        statusMsg.classList.add("erro");
+        return;
+      }
+
+      if (senha !== confirmarSenha) {
+        statusMsg.textContent = "⚠️ As senhas não conferem!";
+        statusMsg.classList.add("erro");
+        return;
+      }
+
+      if (senha.length < 6) {
+        statusMsg.textContent = "⚠️ Senha deve ter mínimo 6 caracteres!";
+        statusMsg.classList.add("erro");
+        return;
+      }
+
+      btnRegistrar.disabled = true;
+      statusMsg.textContent = "Criando conta...";
+
+      try {
+        const resultado = await createUserWithEmailAndPassword(auth, email, senha);
+        const user = resultado.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+          nome,
+          email,
+          tipo,
+          criadoEm: new Date().toISOString(),
+          ativo: true
+        });
+
+        statusMsg.textContent = "✅ Conta criada com sucesso! Redirecionando...";
+        statusMsg.classList.add("sucesso");
+        
+        setTimeout(() => {
+          window.location.href = tipo === "professor" ? "professor.html" : "aluno.html";
+        }, 2000);
+      } catch (erro) {
+        let mensagem = "❌ Erro ao criar conta.";
+        if (erro.code === "auth/email-already-in-use") {
+          mensagem = "❌ Este email já está registrado!";
+        } else if (erro.code === "auth/invalid-email") {
+          mensagem = "❌ Email inválido!";
+        }
+        statusMsg.textContent = mensagem;
+        statusMsg.classList.add("erro");
+        btnRegistrar.disabled = false;
+      }
+    });
+
+    document.getElementById("email").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") btnRegistrar.click();
+    });
+  </script>
+</body>
+</html>
