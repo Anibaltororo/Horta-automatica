@@ -15,7 +15,7 @@
       <button class="menu-btn" onclick="mudarPagina('cursos')">📚 Cursos</button>
       <button class="menu-btn" onclick="mudarPagina('avisos')">📢 Avisos</button>
       <button class="menu-btn" onclick="mudarPagina('atividades')">📝 Atividades</button>
-      <button class="menu-btn" onclick="mudarPagina('registros')">🧾 Recentes</button>
+      <button class="menu-btn" onclick="mudarPagina('registros')">🧾 Turma</button>
       <button class="menu-btn" onclick="mudarPagina('projeto')">🌿 Projeto</button>
     </nav>
     <button id="btnSair" class="btn-sair">🚪 Sair</button>
@@ -73,7 +73,7 @@
         </div>
       </div>
 
-      <!-- ATIVIDADES (substitui feedback) -->
+      <!-- ATIVIDADES -->
       <div id="atividades" class="pagina">
         <div class="caixa">
           <h2>📝 Atividades / Tarefas</h2>
@@ -83,51 +83,51 @@
         </div>
       </div>
 
-      <!-- REGISTROS RECENTES -->
+      <!-- REGISTROS DE TURMA (NOVO NOME) -->
       <div id="registros" class="pagina">
         <div class="caixa">
-          <h2>🧾 Registros Recentes (usuários)</h2>
-          <div id="listaRegistros">
-            <p class="muted">Carregando registros...</p>
-          </div>
-
+          <h2>🧾 Registrar Trabalho da Turma</h2>
+          
           <!-- FORMULÁRIO DE REGISTRO DE TURMA -->
-          <hr style="margin:18px 0;">
-          <h3>📌 Registrar Trabalho da Turma</h3>
           <div id="statusRegistro" class="status-msg" style="display:none;"></div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
             <label style="display:flex;align-items:center;gap:8px;">
               <input id="representanteCheckbox" type="checkbox"> Sou representante da turma
             </label>
             <input id="turmaInput" type="text" placeholder="Ex: 8A" style="flex:1;min-width:160px;padding:8px;border-radius:6px;border:1px solid #d0e8d8;">
           </div>
-          <div style="margin-top:8px;">
-            <label>Descreva o trabalho realizado (breve):</label>
-            <textarea id="trabalhoTextarea" style="width:100%;min-height:80px;padding:8px;border-radius:6px;border:1px solid #d0e8d8;"></textarea>
+          <div style="margin-bottom:16px;">
+            <label><strong>Descreva o trabalho realizado:</strong></label>
+            <textarea id="trabalhoTextarea" style="width:100%;min-height:100px;padding:10px;border-radius:6px;border:1px solid #d0e8d8;font-family:inherit;"></textarea>
           </div>
-          <button id="btnEnviarRegistro" class="btn-primary" style="margin-top:10px;">📤 Enviar Registro</button>
+          <button id="btnEnviarRegistro" class="btn-primary" style="margin-bottom:24px;">📤 Enviar Registro</button>
+
+          <!-- DIVISOR -->
+          <hr style="margin:24px 0;border:none;border-top:2px solid #d0e8d8;">
 
           <!-- AVALIAR ÚLTIMO REGISTRO -->
-          <hr style="margin:18px 0;">
-          <h3>⭐ Avaliar Último Registro da Turma</h3>
-          <div id="ultimaRegistroContainer" style="margin-bottom:12px;">
+          <h2>⭐ Avaliar Último Registro</h2>
+          <div id="ultimaRegistroContainer" style="margin-bottom:16px;">
             <p class="muted">Carregando último registro...</p>
           </div>
           <div id="areaAvaliacao" style="display:none;">
-            <div style="display:flex;gap:12px;align-items:center;">
-              <label>Nota (0-10):</label>
-              <input id="notaInput" type="number" min="0" max="10" step="1" style="width:80px;padding:6px;border-radius:6px;border:1px solid #d0e8d8;">
-            </div>
-            <div style="margin-top:8px;">
-              <label>Feedback curto sobre o trabalho:</label>
-              <textarea id="feedbackUltimo" style="width:100%;min-height:80px;padding:8px;border-radius:6px;border:1px solid #d0e8d8;"></textarea>
-            </div>
-            <div style="margin-top:8px;display:flex;gap:8px;">
-              <button id="btnEnviarAvaliacao" class="btn-primary">Enviar Avaliação</button>
-              <div id="statusAvaliacao" class="status-msg" style="display:none;"></div>
+            <div style="background:#f9fdf8;padding:16px;border-radius:8px;border-left:4px solid #2e8b57;">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+                <label><strong>Nota (0-10):</strong></label>
+                <input id="notaInput" type="number" min="0" max="10" step="1" style="width:80px;padding:8px;border-radius:6px;border:1px solid #d0e8d8;">
+              </div>
+              <div style="margin-bottom:12px;">
+                <label><strong>Seu feedback sobre o trabalho:</strong></label>
+                <textarea id="feedbackUltimo" style="width:100%;min-height:80px;padding:10px;border-radius:6px;border:1px solid #d0e8d8;font-family:inherit;"></textarea>
+              </div>
+              <button id="btnEnviarAvaliacao" class="btn-primary">✅ Enviar Avaliação</button>
+              <div id="statusAvaliacao" class="status-msg" style="display:none;margin-top:12px;"></div>
             </div>
           </div>
-
+          <div id="jaavalidou" style="display:none;background:#e8f5e9;padding:16px;border-radius:8px;border-left:4px solid #1b5e20;">
+            <strong style="color:#1b5e20;">✅ Você já avaliou este registro!</strong>
+            <p style="margin-top:8px;color:#666;">Apenas um aluno pode avaliar cada registro de trabalho.</p>
+          </div>
         </div>
       </div>
 

@@ -50,7 +50,6 @@ onAuthStateChanged(auth, async (user) => {
   carregarCursos();
   carregarAvisos();
   carregarAtividades();
-  carregarRegistros();
   carregarProjeto();
   carregarUltimoRegistro();
 });
@@ -238,38 +237,6 @@ window.abrirReflexaoPrompt = async function(atividadeId) {
   }
 }
 
-// ===== REGISTROS RECENTES (usuários) =====
-async function carregarRegistros() {
-  const lista = document.getElementById("listaRegistros");
-  if (!lista) return;
-  
-  lista.innerHTML = "<p class='muted'>Carregando registros...</p>";
-  try {
-    const q = query(collection(db, "users"), orderBy("criadoEm", "desc"), limit(6));
-    const snap = await getDocs(q);
-    lista.innerHTML = "";
-    
-    if (snap.empty) { 
-      lista.innerHTML = "<p class='muted'>Nenhum registro encontrado.</p>"; 
-      return; 
-    }
-    
-    snap.forEach(d => {
-      const u = d.data();
-      const el = document.createElement("div");
-      el.className = "registro";
-      el.innerHTML = `
-        <strong style="color:#1b5e20;">${u.nome || "—"}</strong>
-        <div class="meta">👤 ${u.tipo || "aluno"} • ${u.criadoEm ? new Date(u.criadoEm).toLocaleString() : ""}</div>
-      `;
-      lista.appendChild(el);
-    });
-  } catch (e) { 
-    console.error("Erro carregarRegistros:", e); 
-    lista.innerHTML = "<p class='muted'>Erro ao carregar registros.</p>"; 
-  }
-}
-
 // ===== PROJETO =====
 async function carregarProjeto() {
   try {
@@ -348,7 +315,6 @@ async function enviarRegistroTurma() {
     
     // Recarregar
     setTimeout(() => {
-      carregarRegistros();
       carregarUltimoRegistro();
     }, 1000);
   } catch (e) {
@@ -359,15 +325,19 @@ async function enviarRegistroTurma() {
   }
 }
 
-// ===== CARREGAR ÚLTIMO REGISTRO =====
+// ===== CARREGAR ÚLTIMO REGISTRO COM VALIDAÇÃO =====
 async function carregarUltimoRegistro() {
   const container = document.getElementById("ultimaRegistroContainer");
   const areaAvaliacao = document.getElementById("areaAvaliacao");
+  const jaAvaliou = document.getElementById("jaavalidou");
   
-  if (!container || !areaAvaliacao) return;
+  if (!container || !areaAvaliacao || !jaAvaliou) return;
   
   container.innerHTML = "<p class='muted'>Carregando último registro...</p>";
   areaAvaliacao.style.display = "none";
+  jaAvaliou.style.display = "none";
+  
+  if (!usuarioAtual) return;
   
   try {
     const q = query(collection(db, "registros_turma"), orderBy("data", "desc"), limit(1));
@@ -382,10 +352,19 @@ async function carregarUltimoRegistro() {
     const val = d.data();
     const id = d.id;
     
-    // Buscar avaliações
+    // Verificar se este aluno já avaliou este registro
     const avalSnap = await getDocs(collection(db, "registros_turma", id, "avaliacoes"));
+    let jaAvaliouEste = false;
     let media = null;
     
+    avalSnap.forEach(a => {
+      const ad = a.data();
+      if (ad.uid === usuarioAtual.uid) {
+        jaAvaliouEste = true;
+      }
+    });
+    
+    // Calcular média
     if (!avalSnap.empty) {
       let soma = 0;
       let cnt = 0;
@@ -410,9 +389,15 @@ async function carregarUltimoRegistro() {
       </div>
     `;
     
-    // Mostrar área de avaliação
-    areaAvaliacao.style.display = "block";
-    areaAvaliacao.dataset.registroId = id;
+    // Mostrar área apropriada
+    if (jaAvaliouEste) {
+      areaAvaliacao.style.display = "none";
+      jaAvaliou.style.display = "block";
+    } else {
+      areaAvaliacao.style.display = "block";
+      jaAvaliou.style.display = "none";
+      areaAvaliacao.dataset.registroId = id;
+    }
   } catch (e) {
     console.error("Erro carregarUltimoRegistro:", e);
     container.innerHTML = "<p class='muted'>Erro ao carregar último registro.</p>";
@@ -473,7 +458,6 @@ async function enviarAvaliacaoUltimo() {
     document.getElementById("notaInput").value = "";
     document.getElementById("feedbackUltimo").value = "";
     
-    // Recarregar
     setTimeout(() => {
       carregarUltimoRegistro();
     }, 1000);
@@ -495,15 +479,11 @@ window.mudarPagina = function(pagina) {
   
   if (event && event.target) event.target.classList.add("active");
   
-  // Carregar dados ao mudar de aba
   if (pagina === "dashboard") carregarSensores();
   if (pagina === "cursos") carregarCursos();
   if (pagina === "avisos") carregarAvisos();
   if (pagina === "atividades") carregarAtividades();
-  if (pagina === "registros") {
-    carregarRegistros();
-    carregarUltimoRegistro();
-  }
+  if (pagina === "registros") carregarUltimoRegistro();
   if (pagina === "projeto") carregarProjeto();
 }
 
