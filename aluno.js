@@ -195,6 +195,141 @@ export async function carregarProjeto() {
   } catch (e) { console.error(e); }
 }
 
+// ===== REGISTRO DE TURMA =====
+async function enviarRegistroTurma() {
+  const representante = document.getElementById("representanteCheckbox").checked;
+  const turma = document.getElementById("turmaInput").value.trim();
+  const trabalho = document.getElementById("trabalhoTextarea").value.trim();
+  const statusEl = document.getElementById("statusRegistro");
+  statusEl.style.display = "none";
+  if (!trabalho || !turma) {
+    statusEl.textContent = "⚠️ Preencha turma e descreva o trabalho.";
+    statusEl.className = "status-msg erro show";
+    return;
+  }
+  if (!usuarioAtual) {
+    alert("Faça login para enviar o registro.");
+    return;
+  }
+  statusEl.textContent = "Enviando...";
+  statusEl.className = "status-msg show";
+  try {
+    await addDoc(collection(db, "registros_turma"), {
+      uid: usuarioAtual.uid,
+      nome: usuarioAtual.displayName || usuarioAtual.email,
+      representante: representante,
+      turma,
+      trabalho,
+      data: new Date()
+    });
+    statusEl.textContent = "✅ Registro enviado.";
+    statusEl.className = "status-msg sucesso show";
+    // limpar campos
+    document.getElementById("representanteCheckbox").checked = false;
+    document.getElementById("turmaInput").value = "";
+    document.getElementById("trabalhoTextarea").value = "";
+    // atualizar lista e último registro
+    carregarRegistros();
+    carregarUltimoRegistro();
+  } catch (e) {
+    console.error("Erro enviarRegistroTurma:", e);
+    statusEl.textContent = "❌ Erro ao enviar.";
+    statusEl.className = "status-msg erro show";
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btnEnviarRegistro") enviarRegistroTurma();
+});
+
+// ===== CARREGAR ÚLTIMO REGISTRO E SEU RESUMO =====
+export async function carregarUltimoRegistro() {
+  const container = document.getElementById("ultimaRegistroContainer");
+  const areaAvaliacao = document.getElementById("areaAvaliacao");
+  if (!container) return;
+  container.innerHTML = "<p class='muted'>Carregando último registro...</p>";
+  areaAvaliacao.style.display = "none";
+  try {
+    const q = query(collection(db, "registros_turma"), orderBy("data", "desc"), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      container.innerHTML = "<p class='muted'>Nenhum registro de turma encontrado.</p>";
+      return;
+    }
+    const d = snap.docs[0];
+    const val = d.data();
+    const id = d.id;
+    // buscar avaliações
+    const avalSnap = await getDocs(collection(db, "registros_turma", id, "avaliacoes"));
+    let media = null;
+    if (!avalSnap.empty) {
+      let soma = 0; let cnt = 0;
+      avalSnap.forEach(a => { const ad = a.data(); if (ad.nota != null) { soma += Number(ad.nota); cnt++; } });
+      if (cnt) media = (soma / cnt).toFixed(1);
+    }
+    container.innerHTML = `
+      <div class="registro">
+        <b>${val.turma} ${val.representante ? "(representante reportou)" : ""}</b>
+        <div class="meta">${formatDate(val.data)} • Por: ${val.nome || "-"}</div>
+        <div style="margin-top:8px;">${(val.trabalho||"").replace(/\n/g,"<br>")}</div>
+        <div class="meta" style="margin-top:8px;">Avaliações: ${avalSnap.size} • Média: ${media !== null ? media : "-"}</div>
+      </div>
+    `;
+    // mostrar área de avaliação
+    areaAvaliacao.style.display = "block";
+    // armazenar id atual para enviar avaliação
+    areaAvaliacao.dataset.registroId = id;
+  } catch (e) {
+    console.error("Erro carregarUltimoRegistro:", e);
+    container.innerHTML = "<p class='muted'>Erro ao carregar último registro.</p>";
+  }
+}
+
+// ===== ENVIAR AVALIAÇÃO PARA O ÚLTIMO REGISTRO =====
+async function enviarAvaliacaoUltimo() {
+  const areaAvaliacao = document.getElementById("areaAvaliacao");
+  const registroId = areaAvaliacao ? areaAvaliacao.dataset.registroId : null;
+  const nota = Number(document.getElementById("notaInput").value);
+  const feedback = document.getElementById("feedbackUltimo").value.trim();
+  const status = document.getElementById("statusAvaliacao");
+  status.style.display = "none";
+  if (!registroId) { alert("Nenhum registro disponível para avaliar."); return; }
+  if (isNaN(nota) || nota < 0 || nota > 10) {
+    status.textContent = "⚠️ Informe uma nota de 0 a 10.";
+    status.className = "status-msg erro show";
+    return;
+  }
+  if (!usuarioAtual) { alert("Faça login para avaliar."); return; }
+  status.textContent = "Enviando avaliação...";
+  status.className = "status-msg show";
+  try {
+    await addDoc(collection(db, "registros_turma", registroId, "avaliacoes"), {
+      uid: usuarioAtual.uid,
+      nome: usuarioAtual.displayName || usuarioAtual.email,
+      nota,
+      feedback,
+      data: new Date()
+    });
+    status.textContent = "✅ Avaliação enviada.";
+    status.className = "status-msg sucesso show";
+    document.getElementById("notaInput").value = "";
+    document.getElementById("feedbackUltimo").value = "";
+    // atualizar exibição do último registro
+    carregarUltimoRegistro();
+  } catch (e) {
+    console.error("Erro enviarAvaliacaoUltimo:", e);
+    status.textContent = "❌ Erro ao enviar avaliação.";
+    status.className = "status-msg erro show";
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btnEnviarAvaliacao") enviarAvaliacaoUltimo();
+});
+
+// chamar ao iniciar/pós login
+carregarUltimoRegistro();
+
 // ===== NAVEGAÇÃO =====
 window.mudarPagina = function(pagina) {
   document.querySelectorAll(".pagina").forEach(el => el.classList.remove("active"));
