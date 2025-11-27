@@ -166,7 +166,6 @@
     let intervalo = null;
     let ativo = true;
 
-    // Geradores
     function gerarTemperatura() {
       const base = 25;
       const variacao = (Math.random() - 0.5) * 8;
@@ -202,6 +201,8 @@
     }
 
     async function enviarLeituras() {
+      if (!ativo) return;
+
       try {
         const temperatura = gerarTemperatura();
         const umidade = gerarUmidade();
@@ -213,25 +214,23 @@
           umidade,
           luminosidade,
           ph,
-          ultimaAtualizacao: new Date()
+          ultimaAtualizacao: new Date().toISOString()
         };
 
         await setDoc(doc(db, "sensores", "horta"), dadosSensores);
 
-        // Atualizar UI
         document.getElementById("ultimaTemp").textContent = temperatura + " °C";
         document.getElementById("ultimaUmidade").textContent = umidade + " %";
         document.getElementById("ultimaLumi").textContent = luminosidade + " lux";
         document.getElementById("ultimaPH").textContent = ph;
         document.getElementById("ultimaHora").textContent = new Date().toLocaleTimeString();
 
-        adicionarLog(`✅ Leitura enviada: ${temperatura}°C | ${umidade}% | ${luminosidade}lux | pH ${ph}`, "sucesso");
+        adicionarLog(`✅ Enviado: ${temperatura}°C | ${umidade}% | ${luminosidade}lux | pH ${ph}`, "sucesso");
 
-        // Atualizar histórico
         await atualizarHistorico(temperatura, umidade, luminosidade, ph);
 
       } catch (erro) {
-        console.error(erro);
+        console.error("Erro completo:", erro);
         adicionarLog(`❌ Erro: ${erro.message}`, "erro");
       }
     }
@@ -240,6 +239,11 @@
       try {
         const snap = await getDoc(doc(db, "historico", "dados"));
         let historico = snap.exists() ? snap.data() : { temperatura: [], umidade: [], luminosidade: [], ph: [] };
+
+        historico.temperatura = (historico.temperatura || []);
+        historico.umidade = (historico.umidade || []);
+        historico.luminosidade = (historico.luminosidade || []);
+        historico.ph = (historico.ph || []);
 
         historico.temperatura.push(temp);
         historico.umidade.push(umidade);
@@ -259,14 +263,21 @@
       }
     }
 
-    // Inicia automaticamente
-    enviarLeituras();
-    adicionarLog("🚀 Primeira leitura enviada!", "sucesso");
-    intervalo = setInterval(enviarLeituras, 5000);
+    // Iniciar imediatamente
+    console.log("Iniciando simulador...");
+    setTimeout(() => {
+      enviarLeituras();
+      adicionarLog("🚀 Primeira leitura enviada!", "sucesso");
+    }, 500);
+
+    intervalo = setInterval(() => {
+      if (ativo) {
+        enviarLeituras();
+      }
+    }, 5000);
 
     document.getElementById("btnParar").addEventListener("click", () => {
       ativo = false;
-      clearInterval(intervalo);
       document.getElementById("btnIniciar").style.display = "inline-block";
       document.getElementById("btnParar").style.display = "none";
       document.getElementById("status").textContent = "🔴 Simulador parado";
@@ -275,17 +286,13 @@
     });
 
     document.getElementById("btnIniciar").addEventListener("click", () => {
-      if (ativo) return;
       ativo = true;
       document.getElementById("btnIniciar").style.display = "none";
       document.getElementById("btnParar").style.display = "inline-block";
       document.getElementById("status").textContent = "🟢 Simulador ativo";
       document.getElementById("status").classList.add("ativo");
-      document.getElementById("log").innerHTML = "";
-
       adicionarLog("🚀 Simulador reiniciado!", "sucesso");
       enviarLeituras();
-      intervalo = setInterval(enviarLeituras, 5000);
     });
   </script>
 </body>

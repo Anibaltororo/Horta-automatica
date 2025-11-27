@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Desempenho da Horta</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    .cards-sensor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .card-sensor {
+      background: linear-gradient(135deg, #fff 0%, #f9fdf8 100%);
+      padding: 22px;
+      border-radius: 10px;
+      text-align: center;
+      border: 2px solid #d0e8d8;
+      box-shadow: 0 4px 15px rgba(27, 94, 32, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .card-sensor:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 25px rgba(27, 94, 32, 0.12);
+      border-color: #2e8b57;
+    }
+
+    .card-sensor .label {
+      font-size: 13px;
+      color: #64748b;
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-sensor .valor {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1b5e20;
+      display: block;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .chart-container {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #d0e8d8;
+      box-shadow: 0 10px 30px rgba(27, 94, 32, 0.08);
+    }
+
+    .chart-container h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chart-container canvas {
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">🌱 Horta</div>
+    <nav class="menu">
+      <button class="menu-btn" onclick="irPara('dashboard')">📊 Dashboard</button>
+      <button class="menu-btn active" onclick="irPara('desempenho')">📈 Desempenho</button>
+      <button class="menu-btn" onclick="irPara('simulador')">🔧 Simulador</button>
+    </nav>
+    <button id="btnSair" class="btn-sair">🚪 Sair</button>
+  </div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h1>📈 Desempenho da Horta</h1>
+      <div class="user-info">
+        ⚙️ Painel de Controle
+      </div>
+    </header>
+
+    <div class="container">
+      <section class="caixa" style="background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%); border: 2px solid #d0e8d8;">
+        <h2>📊 Monitoramento em Tempo Real</h2>
+        <div class="cards-sensor">
+          <div class="card-sensor">
+            <span class="label">🌡️ Temperatura</span>
+            <span class="valor" id="temp">-- °C</span>
+          </div>
+          <div class="card-sensor">
+            <span class="label">💧 Umidade do Solo</span>
+            <span class="valor" id="umidade">-- %</span>
+          </div>
+          <div class="card-sensor">
+            <span class="label">☀️ Luminosidade</span>
+            <span class="valor" id="lumi">-- lux</span>
+          </div>
+          <div class="card-sensor">
+            <span class="label">🌱 pH do Solo</span>
+            <span class="valor" id="ph">-- </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="caixa">
+        <h2>📈 Gráficos e Estatísticas</h2>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3>🌡️ Temperatura (últimos 7 dias)</h3>
+            <canvas id="chartTemp"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>💧 Umidade do Solo (últimos 7 dias)</h3>
+            <canvas id="chartUmidade"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>☀️ Luminosidade (últimos 7 dias)</h3>
+            <canvas id="chartLumi"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>🌱 pH do Solo (últimos 7 dias)</h3>
+            <canvas id="chartPH"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <small>&copy; 2025 Horta Escolar Automatizada | Educação e Tecnologia</small>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const db = getFirestore();
+
+    let chartTemp = null, chartUmidade = null, chartLumi = null, chartPH = null;
+
+    window.irPara = function(pagina) {
+      if (pagina === "simulador") {
+        window.location.href = "simulador.html";
+      } else if (pagina === "dashboard") {
+        window.location.href = "aluno.html";
+      }
+    }
+
+    async function carregarSensores() {
+      try {
+        const snap = await getDoc(doc(db, "sensores", "horta"));
+        if (snap.exists()) {
+          const dados = snap.data();
+          document.getElementById("temp").textContent = dados.temperatura ? dados.temperatura.toFixed(1) + " °C" : "-- °C";
+          document.getElementById("umidade").textContent = dados.umidade ? dados.umidade.toFixed(1) + " %" : "-- %";
+          document.getElementById("lumi").textContent = dados.luminosidade ? dados.luminosidade.toFixed(0) + " lux" : "-- lux";
+          document.getElementById("ph").textContent = dados.ph ? dados.ph.toFixed(2) : "-- ";
+        }
+      } catch (e) {
+        console.error("Erro ao carregar sensores:", e);
+      }
+    }
+
+    async function carregarGraficos() {
+      try {
+        const snap = await getDoc(doc(db, "historico", "dados"));
+        if (snap.exists()) {
+          const historico = snap.data();
+          const temp = historico.temperatura || [];
+          const umidade = historico.umidade || [];
+          const luminosidade = historico.luminosidade || [];
+          const ph = historico.ph || [];
+          const labels = Array(7).fill(0).map((_, i) => `Dia ${i + 1}`);
+
+          if (chartTemp) chartTemp.destroy();
+          chartTemp = new Chart(document.getElementById("chartTemp"), {
+            type: "line",
+            data: { 
+              labels, 
+              datasets: [{ 
+                label: "Temperatura (°C)", 
+                data: temp.slice(-7), 
+                borderColor: "#f59e0b", 
+                backgroundColor: "rgba(245, 158, 11, 0.1)", 
+                tension: 0.4, 
+                fill: true 
+              }] 
+            },
+            options: { 
+              responsive: true, 
+              maintainAspectRatio: true,
+              plugins: { legend: { display: true } } 
+            }
+          });
+
+          if (chartUmidade) chartUmidade.destroy();
+          chartUmidade = new Chart(document.getElementById("chartUmidade"), {
+            type: "line",
+            data: { 
+              labels, 
+              datasets: [{ 
+                label: "Umidade (%)", 
+                data: umidade.slice(-7), 
+                borderColor: "#3b82f6", 
+                backgroundColor: "rgba(59, 130, 246, 0.1)", 
+                tension: 0.4, 
+                fill: true 
+              }] 
+            },
+            options: { 
+              responsive: true, 
+              maintainAspectRatio: true,
+              plugins: { legend: { display: true } } 
+            }
+          });
+
+          if (chartLumi) chartLumi.destroy();
+          chartLumi = new Chart(document.getElementById("chartLumi"), {
+            type: "line",
+            data: { 
+              labels, 
+              datasets: [{ 
+                label: "Luminosidade (lux)", 
+                data: luminosidade.slice(-7), 
+                borderColor: "#fbbf24", 
+                backgroundColor: "rgba(251, 191, 36, 0.1)", 
+                tension: 0.4, 
+                fill: true 
+              }] 
+            },
+            options: { 
+              responsive: true, 
+              maintainAspectRatio: true,
+              plugins: { legend: { display: true } } 
+            }
+          });
+
+          if (chartPH) chartPH.destroy();
+          chartPH = new Chart(document.getElementById("chartPH"), {
+            type: "line",
+            data: { 
+              labels, 
+              datasets: [{ 
+                label: "pH", 
+                data: ph.slice(-7), 
+                borderColor: "#8b5cf6", 
+                backgroundColor: "rgba(139, 92, 246, 0.1)", 
+                tension: 0.4, 
+                fill: true 
+              }] 
+            },
+            options: { 
+              responsive: true, 
+              maintainAspectRatio: true,
+              plugins: { legend: { display: true } } 
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Erro ao carregar gráficos:", e);
+      }
+    }
+
+    carregarSensores();
+    carregarGraficos();
+
+    setInterval(carregarSensores, 5000);
+    setInterval(carregarGraficos, 30000);
+  </script>
+</body>
+</html>
