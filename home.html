@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Horta Escolar - Bem-vindo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: #333;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: linear-gradient(135deg, #1b5e20 0%, #2e8b57 100%);
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(27, 94, 32, 0.2);
+    }
+
+    .logo-navbar {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .btn-login {
+      background: #fff;
+      color: #1b5e20;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, rgba(27, 94, 32, 0.9) 0%, rgba(46, 139, 87, 0.9) 100%), 
+                  url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23f0fdf4" width="1200" height="600"/><circle cx="100" cy="100" r="50" fill="%23d0e8d8" opacity="0.3"/><circle cx="1100" cy="500" r="80" fill="%232e8b57" opacity="0.1"/></svg>');
+      background-size: cover;
+      background-position: center;
+      padding: 80px 40px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 16px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 32px;
+      opacity: 0.95;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .btn-cta {
+      background: #fbbf24;
+      color: #000;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.3s;
+      display: inline-block;
+    }
+
+    .btn-cta:hover {
+      background: #f59e0b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+    }
+
+    /* SEÇÃO SOBRE */
+    .sobre {
+      padding: 80px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sobre h2 {
+      font-size: 36px;
+      color: #1b5e20;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .grid-sobre {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .grid-sobre img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
+    }
+
+    .sobre-texto h3 {
+      color: #2e8b57;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .sobre-texto p {
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .lista-beneficios {
+      list-style: none;
+      margin-top: 20px;
+    }
+
+    .lista-beneficios li {
+      color: #333;
+      padding: 8px 0;
+      padding-left: 32px;
+      position: relative;
+      font-size: 15px;
+    }
+
+    .lista-beneficios li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #1b5e20;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    /* SEÇÃO CURSOS */
+    .cursos-section {
+      background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+      padding: 80px 40px;
+    }
+
+    .cursos-section h2 {
+      font-size: 36px;
+      color: #1b5e20;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .grid-cursos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card-curso {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(27, 94, 32, 0.1);
+      border-top: 4px solid #2e8b57;
+      transition: all 0.3s;
+    }
+
+    .card-curso:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 30px rgba(27, 94, 32, 0.2);
+    }
+
+    .card-curso h3 {
+      color: #1b5e20;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .card-curso .instrutor {
+      color: #2e8b57;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .card-curso p {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .card-curso-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #999;
+      padding-top: 16px;
+      border-top: 1px solid #d0e8d8;
+    }
+
+    .carregando {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: #1b5e20;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+      margin-top: 60px;
+    }
+
+    .footer p {
+      margin: 8px 0;
+      opacity: 0.9;
+    }
+
+    /* MODAL LOGIN */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s;
+    }
+
+    .modal.show {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h2 {
+      color: #1b5e20;
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-modal:hover {
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #d0e8d8;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #1b5e20;
+      box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+    }
+
+    .btn-auth {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1b5e20 0%, #2e8b57 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 16px;
+    }
+
+    .btn-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(27, 94, 32, 0.3);
+    }
+
+    .btn-auth:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .link-auth {
+      text-align: center;
+      margin-top: 16px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .link-auth a {
+      color: #1b5e20;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link-auth a:hover {
+      color: #2e8b57;
+    }
+
+    .status-msg {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status-msg.show {
+      display: block;
+    }
+
+    .status-msg.erro {
+      background: #fee2e2;
+      color: #c33;
+      border: 1px solid #fca5a5;
+    }
+
+    @media (max-width: 768px) {
+      .grid-sobre {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .sobre, .cursos-section {
+        padding: 40px 20px;
+      }
+
+      .navbar {
+        padding: 12px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo-navbar">🌱 Horta Escolar</div>
+    <button class="btn-login" onclick="abrirModalLogin()">🔐 Login</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>🌿 Bem-vindo à Horta Escolar</h1>
+    <p>Aprenda sobre sustentabilidade, cultivo de plantas e trabalho em equipe através de uma experiência prática e educativa.</p>
+    <button class="btn-cta" onclick="abrirModalLogin()">Comece Agora</button>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="sobre">
+    <h2>Sobre o Projeto</h2>
+    <div class="grid-sobre">
+      <div>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23e8f5e9' width='400' height='300'/%3E%3Ccircle cx='200' cy='150' r='80' fill='%232e8b57'/%3E%3Cpath d='M200 70 Q230 120 200 150 Q170 120 200 70' fill='%23fbbf24'/%3E%3C/svg%3E" alt="Horta">
+      </div>
+      <div class="sobre-texto">
+        <h3>Cultive Conhecimento</h3>
+        <p>Nossa horta escolar é um espaço de aprendizagem prática onde alunos e professores trabalham juntos para cultivar não apenas plantas, mas também valores como responsabilidade, cooperação e respeito pela natureza.</p>
+        
+        <ul class="lista-beneficios">
+          <li>Aprender sobre sustentabilidade</li>
+          <li>Desenvolver habilidades práticas</li>
+          <li>Trabalhar em equipe</li>
+          <li>Monitorar dados em tempo real</li>
+          <li>Participar de aulas interativas</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CURSOS -->
+  <section class="cursos-section">
+    <h2>📚 Cursos Disponíveis</h2>
+    <div class="grid-cursos" id="gridCursos">
+      <div class="carregando">Carregando cursos...</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>🌱 Horta Escolar - Educação Sustentável</p>
+    <p>© 2025 Todos os direitos reservados</p>
+  </footer>
+
+  <!-- MODAL LOGIN -->
+  <div id="modalLogin" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔐 Login</h2>
+        <button class="close-modal" onclick="fecharModalLogin()">✕</button>
+      </div>
+
+      <div id="statusMsg" class="status-msg"></div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="seu@email.com">
+      </div>
+
+      <div class="form-group">
+        <label>Senha</label>
+        <input id="senha" type="password" placeholder="Sua senha">
+      </div>
+
+      <button id="btnLogin" class="btn-auth">Entrar</button>
+
+      <div class="link-auth">
+        Não tem conta? <a href="registro.html">Crie uma aqui</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrd7l_TwnRddpcK0eMDVeiYX9ynxbQsJ8",
+      authDomain: "horta-automatica.firebaseapp.com",
+      projectId: "horta-automatica",
+      storageBucket: "horta-automatica.appspot.com",
+      messagingSenderId: "177154489173",
+      appId: "1:177154489173:web:8e223df0bc0715525c4ddc"
+    };
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const db = getFirestore();
+    const auth = getAuth();
+
+    // ===== CARREGAR CURSOS =====
+    async function carregarCursos() {
+      try {
+        const snap = await getDocs(collection(db, "cursos"));
+        const gridCursos = document.getElementById("gridCursos");
+        gridCursos.innerHTML = "";
+
+        if (snap.empty) {
+          gridCursos.innerHTML = "<p class='carregando'>Nenhum curso disponível no momento.</p>";
+          return;
+        }
+
+        snap.forEach(doc => {
+          const curso = doc.data();
+          const card = document.createElement("div");
+          card.className = "card-curso";
+          card.innerHTML = `
+            <h3>📚 ${curso.titulo || "Sem título"}</h3>
+            <div class="instrutor">👨‍🏫 ${curso.instrutor || "Não especificado"}</div>
+            <p>${(curso.descricao || "").substring(0, 100)}${curso.descricao && curso.descricao.length > 100 ? "..." : ""}</p>
+            <div class="card-curso-info">
+              <span>⏱️ ${curso.duracao || "-"}</span>
+              <span>📊 ${curso.nivel || "-"}</span>
+            </div>
+          `;
+          gridCursos.appendChild(card);
+        });
+      } catch (e) {
+        console.error("Erro ao carregar cursos:", e);
+        document.getElementById("gridCursos").innerHTML = "<p class='carregando'>Erro ao carregar cursos.</p>";
+      }
+    }
+
+    // ===== MODAL LOGIN =====
+    window.abrirModalLogin = function() {
+      document.getElementById("modalLogin").classList.add("show");
+    }
+
+    window.fecharModalLogin = function() {
+      document.getElementById("modalLogin").classList.remove("show");
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById("modalLogin").addEventListener("click", (e) => {
+      if (e.target.id === "modalLogin") {
+        fecharModalLogin();
+      }
+    });
+
+    // ===== LOGIN =====
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const statusMsg = document.getElementById("statusMsg");
+      const btnLogin = document.getElementById("btnLogin");
+
+      statusMsg.classList.remove("show", "erro");
+
+      if (!email || !senha) {
+        statusMsg.textContent = "⚠️ Preencha email e senha!";
+        statusMsg.classList.add("show", "erro");
+        return;
+      }
+
+      btnLogin.disabled = true;
+      statusMsg.textContent = "Conectando...";
+      statusMsg.classList.add("show");
+
+      try {
+        const resultado = await signInWithEmailAndPassword(auth, email, senha);
+        const user = resultado.user;
+
+        // Buscar tipo de usuário
+        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const snap = await getDoc(doc(db, "users", user.uid));
+
+        if (snap.exists()) {
+          const tipo = snap.data().tipo;
+          fecharModalLogin();
+          setTimeout(() => {
+            window.location.href = tipo === "professor" ? "professor.html" : "aluno.html";
+          }, 500);
+        }
+      } catch (erro) {
+        let mensagem = "❌ Erro ao fazer login.";
+        if (erro.code === "auth/user-not-found") {
+          mensagem = "❌ Usuário não encontrado!";
+        } else if (erro.code === "auth/wrong-password") {
+          mensagem = "❌ Senha incorreta!";
+        }
+        statusMsg.textContent = mensagem;
+        statusMsg.classList.add("erro");
+        btnLogin.disabled = false;
+      }
+    });
+
+    // Enter para fazer login
+    document.getElementById("senha").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") document.getElementById("btnLogin").click();
+    });
+
+    // Carregar cursos ao iniciar
+    carregarCursos();
+  </script>
+</body>
+</html>
