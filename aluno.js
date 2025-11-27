@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, doc, getDoc, query, orderBy, limit, addDoc
+  getFirestore, collection, getDocs, doc, getDoc, query, orderBy, limit, addDoc, updateDoc, increment, deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
@@ -18,6 +18,7 @@ const db = getFirestore();
 const auth = getAuth();
 
 let usuarioAtual = null;
+let cursoAtualModal = null;
 
 function formatDate(ts) {
   try {
@@ -34,7 +35,6 @@ onAuthStateChanged(auth, async (user) => {
   }
   usuarioAtual = user;
   
-  // Buscar nome do usuário
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
     if (snap.exists()) {
@@ -45,7 +45,6 @@ onAuthStateChanged(auth, async (user) => {
     console.error("Erro ao buscar usuário:", e); 
   }
 
-  // Carregar todos os dados
   carregarSensores();
   carregarCursos();
   carregarAvisos();
@@ -54,7 +53,6 @@ onAuthStateChanged(auth, async (user) => {
   carregarUltimoRegistro();
 });
 
-// Botão sair
 const btnSair = document.getElementById("btnSair");
 if (btnSair) {
   btnSair.addEventListener("click", async () => {
@@ -67,10 +65,7 @@ if (btnSair) {
 async function carregarSensores() {
   try {
     const snap = await getDoc(doc(db, "sensores", "horta"));
-    if (!snap.exists()) {
-      console.log("Documento sensores não encontrado");
-      return;
-    }
+    if (!snap.exists()) return;
     const dados = snap.data();
     
     const tempEl = document.getElementById("temp");
@@ -87,40 +82,7 @@ async function carregarSensores() {
   }
 }
 
-// ===== CURSOS =====
-async function carregarCursos() {
-  const lista = document.getElementById("listaCursos");
-  if (!lista) return;
-  
-  lista.innerHTML = "<p class='muted'>Carregando cursos...</p>";
-  try {
-    const snap = await getDocs(collection(db, "cursos"));
-    lista.innerHTML = "";
-    
-    if (snap.empty) { 
-      lista.innerHTML = "<p class='muted'>Nenhum curso disponível.</p>"; 
-      return; 
-    }
-    
-    snap.forEach(d => {
-      const c = d.data();
-      const div = document.createElement("div");
-      div.className = "curso-item";
-      div.innerHTML = `
-        <h3 style="margin:0 0 8px 0; color:#1b5e20;">📚 ${c.titulo || "Sem título"}</h3>
-        <p style="margin:6px 0;"><strong>Instrutor:</strong> ${c.instrutor || "-"}</p>
-        <p style="margin:6px 0;"><strong>Descrição:</strong> ${(c.descricao || "").replace(/\n/g, "<br>")}</p>
-        <small>⏱️ ${c.duracao || "-"} • 📊 ${c.nivel || "-"}</small>
-      `;
-      lista.appendChild(div);
-    });
-  } catch (e) { 
-    console.error("Erro carregarCursos:", e); 
-    lista.innerHTML = "<p class='muted'>Erro ao carregar cursos.</p>"; 
-  }
-}
-
-// ===== AVISOS =====
+// ===== AVISOS COM REAÇÕES =====
 async function carregarAvisos() {
   const container = document.getElementById("listaAvisos");
   if (!container) return;
@@ -138,18 +100,277 @@ async function carregarAvisos() {
     
     snap.forEach(d => {
       const a = d.data();
+      const id = d.id;
       const el = document.createElement("div");
       el.className = "aviso";
       el.innerHTML = `
         <strong style="color:#1b5e20;">📢 ${a.titulo || "Aviso"}</strong>
         <div class="meta">${formatDate(a.data)}</div>
         <div style="margin-top:8px; color:#333;">${(a.msg || "").replace(/\n/g, "<br>")}</div>
+        
+        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+          <button class="btn-reacao" onclick="reagirAviso('${id}', '👍')">👍 <span id="count-${id}-👍">${a.reacoes && a.reacoes['👍'] ? a.reacoes['👍'] : 0}</span></button>
+          <button class="btn-reacao" onclick="reagirAviso('${id}', '❤️')">❤️ <span id="count-${id}-❤️">${a.reacoes && a.reacoes['❤️'] ? a.reacoes['❤️'] : 0}</span></button>
+          <button class="btn-reacao" onclick="reagirAviso('${id}', '🎉')">🎉 <span id="count-${id}-🎉">${a.reacoes && a.reacoes['🎉'] ? a.reacoes['🎉'] : 0}</span></button>
+          <button class="btn-reacao" onclick="reagirAviso('${id}', '🤔')">🤔 <span id="count-${id}-🤔">${a.reacoes && a.reacoes['🤔'] ? a.reacoes['🤔'] : 0}</span></button>
+        </div>
       `;
       container.appendChild(el);
     });
   } catch (e) { 
     console.error("Erro carregarAvisos:", e); 
     container.innerHTML = "<p class='muted'>Erro ao carregar avisos.</p>"; 
+  }
+}
+
+// Função para reagir ao aviso
+window.reagirAviso = async function(avisoId, reacao) {
+  if (!usuarioAtual) {
+    alert("Faça login para reagir.");
+    return;
+  }
+  
+  try {
+    // Verificar se já reagiu
+    const reacaoSnap = await getDocs(collection(db, "avisos", avisoId, "reacoes"));
+    let jaReagiu = false;
+    let docReacaoAntiga = null;
+    
+    reacaoSnap.forEach(d => {
+      const data = d.data();
+      if (data.uid === usuarioAtual.uid) {
+        jaReagiu = true;
+        docReacaoAntiga = d.id;
+      }
+    });
+    
+    if (jaReagiu) {
+      // Remover reação anterior
+      await deleteDoc(doc(db, "avisos", avisoId, "reacoes", docReacaoAntiga));
+      
+      // Decrementar contador
+      const avisoDoc = await getDoc(doc(db, "avisos", avisoId));
+      if (avisoDoc.exists()) {
+        const data = avisoDoc.data();
+        const reacoes = data.reacoes || {};
+        const reacaoAntiga = reacoes[Object.keys(reacoes).find(k => {
+          const snap = getDocs(collection(db, "avisos", avisoId, "reacoes"));
+          return false;
+        })];
+      }
+    }
+    
+    // Adicionar nova reação
+    await addDoc(collection(db, "avisos", avisoId, "reacoes"), {
+      uid: usuarioAtual.uid,
+      reacao,
+      data: new Date()
+    });
+    
+    // Atualizar contador
+    const avisoDocRef = doc(db, "avisos", avisoId);
+    const avisoData = await getDoc(avisoDocRef);
+    const reacoes = avisoData.data().reacoes || {};
+    reacoes[reacao] = (reacoes[reacao] || 0) + 1;
+    
+    await updateDoc(avisoDocRef, { reacoes });
+    
+    // Atualizar UI
+    const countEl = document.getElementById(`count-${avisoId}-${reacao}`);
+    if (countEl) countEl.textContent = reacoes[reacao];
+    
+    carregarAvisos();
+  } catch (e) {
+    console.error("Erro ao reagir:", e);
+  }
+}
+
+// ===== CURSOS COM INSCRIÇÃO E COMENTÁRIOS =====
+async function carregarCursos() {
+  const lista = document.getElementById("listaCursos");
+  if (!lista) return;
+  
+  lista.innerHTML = "<p class='muted'>Carregando cursos...</p>";
+  try {
+    const snap = await getDocs(collection(db, "cursos"));
+    lista.innerHTML = "";
+    
+    if (snap.empty) { 
+      lista.innerHTML = "<p class='muted'>Nenhum curso disponível.</p>"; 
+      return; 
+    }
+    
+    snap.forEach(async (d) => {
+      const c = d.data();
+      const cursoId = d.id;
+      
+      // Verificar inscrição
+      let inscrito = false;
+      if (usuarioAtual) {
+        const inscricaoSnap = await getDocs(collection(db, "cursos", cursoId, "inscritos"));
+        inscricaoSnap.forEach(insc => {
+          if (insc.data().uid === usuarioAtual.uid) inscrito = true;
+        });
+      }
+      
+      // Contar comentários
+      const comentariosSnap = await getDocs(collection(db, "cursos", cursoId, "comentarios"));
+      
+      const div = document.createElement("div");
+      div.className = "curso-item";
+      div.style.cssText = `
+        background: linear-gradient(135deg, #f9fdf8 0%, #f0fdf4 100%);
+        border-left: 4px solid #2e8b57;
+        transition: all 0.3s;
+      `;
+      
+      div.innerHTML = `
+        <h3 style="margin:0 0 8px 0; color:#1b5e20;">📚 ${c.titulo || "Sem título"}</h3>
+        <p style="margin:6px 0;"><strong>👨‍🏫 Instrutor:</strong> ${c.instrutor || "-"}</p>
+        <p style="margin:6px 0;"><strong>📝 Descrição:</strong> ${(c.descricao || "").substring(0, 100)}...</p>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:8px;">
+          <span>⏱️ ${c.duracao || "-"}</span>
+          <span>📊 ${c.nivel || "-"}</span>
+          <span>💬 ${comentariosSnap.size} comentários</span>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="btn-primary" onclick="abrirModalCurso('${cursoId}', '${c.titulo || "Curso"}', '${(c.descricao || "").replace(/'/g, "&apos;")}')">
+            ${inscrito ? '✅ Inscrição Ativa' : '📌 Ver Detalhes'}
+          </button>
+        </div>
+      `;
+      lista.appendChild(div);
+    });
+  } catch (e) { 
+    console.error("Erro carregarCursos:", e); 
+    lista.innerHTML = "<p class='muted'>Erro ao carregar cursos.</p>"; 
+  }
+}
+
+// Funções do modal de curso
+window.abrirModalCurso = async function(cursoId, titulo, descricao) {
+  cursoAtualModal = cursoId;
+  document.getElementById("tituloCursoModal").textContent = titulo;
+  document.getElementById("descricaoCursoModal").textContent = descricao.replace(/\\n/g, "\n");
+  
+  // Verificar inscrição
+  let inscrito = false;
+  if (usuarioAtual) {
+    const inscricaoSnap = await getDocs(collection(db, "cursos", cursoId, "inscritos"));
+    inscricaoSnap.forEach(insc => {
+      if (insc.data().uid === usuarioAtual.uid) inscrito = true;
+    });
+  }
+  
+  const btnInscricao = document.getElementById("btnInscricao");
+  if (inscrito) {
+    btnInscricao.textContent = "✅ Já inscrito";
+    btnInscricao.disabled = true;
+  } else {
+    btnInscricao.textContent = "📌 Inscrever-se";
+    btnInscricao.disabled = false;
+  }
+  
+  carregarComentariosCurso(cursoId);
+  document.getElementById("modalCurso").style.display = "flex";
+}
+
+window.fecharModalCurso = function() {
+  document.getElementById("modalCurso").style.display = "none";
+  cursoAtualModal = null;
+}
+
+window.inscreverCurso = async function() {
+  if (!usuarioAtual) { alert("Faça login para se inscrever."); return; }
+  if (!cursoAtualModal) return;
+  
+  try {
+    await addDoc(collection(db, "cursos", cursoAtualModal, "inscritos"), {
+      uid: usuarioAtual.uid,
+      nome: usuarioAtual.displayName || usuarioAtual.email,
+      data: new Date()
+    });
+    
+    alert("✅ Inscrito com sucesso no curso!");
+    document.getElementById("btnInscricao").textContent = "✅ Já inscrito";
+    document.getElementById("btnInscricao").disabled = true;
+    carregarCursos();
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao inscrever.");
+  }
+}
+
+// Comentários do curso
+async function carregarComentariosCurso(cursoId) {
+  const lista = document.getElementById("listaComentariosCurso");
+  lista.innerHTML = "<p class='muted'>Carregando comentários...</p>";
+  
+  try {
+    const q = query(collection(db, "cursos", cursoId, "comentarios"), orderBy("data", "desc"));
+    const snap = await getDocs(q);
+    lista.innerHTML = "";
+    
+    if (snap.empty) {
+      lista.innerHTML = "<p class='muted'>Nenhum comentário ainda.</p>";
+      return;
+    }
+    
+    snap.forEach(d => {
+      const com = d.data();
+      const el = document.createElement("div");
+      el.style.cssText = `
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        border-left: 3px solid #2e8b57;
+      `;
+      el.innerHTML = `
+        <strong style="color:#1b5e20; font-size:13px;">${com.nome || "Anônimo"}</strong>
+        <div style="font-size:11px; color:#999; margin-top:2px;">${formatDate(com.data)}</div>
+        <p style="margin:6px 0; color:#555; font-size:13px;">${com.texto}</p>
+      `;
+      lista.appendChild(el);
+    });
+  } catch (e) {
+    console.error("Erro ao carregar comentários:", e);
+    lista.innerHTML = "<p class='muted'>Erro ao carregar.</p>";
+  }
+}
+
+// Enviar comentário
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btnInscricao" && !e.target.disabled) {
+    inscreverCurso();
+  }
+  if (e.target && e.target.id === "btnEnviarComentario") {
+    enviarComentarioCurso();
+  }
+});
+
+async function enviarComentarioCurso() {
+  if (!usuarioAtual) { alert("Faça login para comentar."); return; }
+  if (!cursoAtualModal) return;
+  
+  const input = document.getElementById("comentarioInput");
+  const texto = input.value.trim();
+  
+  if (!texto) { alert("Escreva um comentário."); return; }
+  
+  try {
+    await addDoc(collection(db, "cursos", cursoAtualModal, "comentarios"), {
+      uid: usuarioAtual.uid,
+      nome: usuarioAtual.displayName || usuarioAtual.email,
+      texto,
+      data: new Date()
+    });
+    
+    input.value = "";
+    carregarComentariosCurso(cursoAtualModal);
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao enviar comentário.");
   }
 }
 
@@ -191,12 +412,8 @@ async function carregarAtividades() {
   }
 }
 
-// Função global: concluir atividade
 window.concluirAtividade = async function(atividadeId) {
-  if (!usuarioAtual) { 
-    alert("Faça login para concluir atividades."); 
-    return; 
-  }
+  if (!usuarioAtual) { alert("Faça login."); return; }
   try {
     await addDoc(collection(db, "atividades", atividadeId, "conclusoes"), { 
       uid: usuarioAtual.uid, 
@@ -204,25 +421,13 @@ window.concluirAtividade = async function(atividadeId) {
       data: new Date() 
     });
     const el = document.getElementById(`statusAtividade-${atividadeId}`);
-    if (el) {
-      el.innerHTML = "<div class='status-msg sucesso show'>✅ Atividade marcada como concluída!</div>";
-    }
-  } catch (e) { 
-    console.error("Erro ao marcar concluída:", e); 
-    alert("Erro ao marcar concluída."); 
-  }
+    if (el) el.innerHTML = "<div class='status-msg sucesso show'>✅ Concluída!</div>";
+  } catch (e) { console.error(e); alert("Erro."); }
 }
 
-// Função global: abrir prompt de reflexão
 window.abrirReflexaoPrompt = async function(atividadeId) {
-  const texto = prompt("Escreva sua reflexão sobre a atividade:");
-  if (!texto) return;
-  
-  if (!usuarioAtual) { 
-    alert("Faça login antes."); 
-    return; 
-  }
-  
+  const texto = prompt("Escreva sua reflexão:");
+  if (!texto || !usuarioAtual) return;
   try {
     await addDoc(collection(db, "atividades", atividadeId, "reflexoes"), { 
       uid: usuarioAtual.uid, 
@@ -230,11 +435,8 @@ window.abrirReflexaoPrompt = async function(atividadeId) {
       texto, 
       data: new Date() 
     });
-    alert("✅ Reflexão enviada com sucesso!");
-  } catch (e) { 
-    console.error("Erro ao enviar reflexão:", e); 
-    alert("Erro ao enviar reflexão."); 
-  }
+    alert("✅ Reflexão enviada!");
+  } catch (e) { console.error(e); alert("Erro."); }
 }
 
 // ===== PROJETO =====
@@ -262,11 +464,9 @@ async function carregarProjeto() {
         </div>
       `;
     } else {
-      infoProjeto.innerHTML = '<p class="muted" style="text-align:center;">📭 Nenhum projeto criado.</p>';
+      infoProjeto.innerHTML = '<p class="muted">📭 Nenhum projeto criado.</p>';
     }
-  } catch (e) { 
-    console.error("Erro ao carregar projeto:", e); 
-  }
+  } catch (e) { console.error(e); }
 }
 
 // ===== REGISTRO DE TURMA =====
@@ -277,19 +477,13 @@ async function enviarRegistroTurma() {
   const statusEl = document.getElementById("statusRegistro");
   
   statusEl.style.display = "none";
-  
   if (!trabalho || !turma) {
-    statusEl.textContent = "⚠️ Preencha turma e descreva o trabalho.";
+    statusEl.textContent = "⚠️ Preencha todos os campos.";
     statusEl.className = "status-msg erro show";
     statusEl.style.display = "block";
     return;
   }
-  
-  if (!usuarioAtual) {
-    alert("Faça login para enviar o registro.");
-    return;
-  }
-  
+  if (!usuarioAtual) { alert("Faça login."); return; }
   statusEl.textContent = "Enviando...";
   statusEl.className = "status-msg show";
   statusEl.style.display = "block";
@@ -298,185 +492,109 @@ async function enviarRegistroTurma() {
     await addDoc(collection(db, "registros_turma"), {
       uid: usuarioAtual.uid,
       nome: usuarioAtual.displayName || usuarioAtual.email,
-      representante: representante,
+      representante,
       turma,
       trabalho,
       data: new Date()
     });
-    
-    statusEl.textContent = "✅ Registro enviado com sucesso!";
+    statusEl.textContent = "✅ Enviado!";
     statusEl.className = "status-msg sucesso show";
-    statusEl.style.display = "block";
-    
-    // Limpar campos
     document.getElementById("representanteCheckbox").checked = false;
     document.getElementById("turmaInput").value = "";
     document.getElementById("trabalhoTextarea").value = "";
-    
-    // Recarregar
-    setTimeout(() => {
-      carregarUltimoRegistro();
-    }, 1000);
+    setTimeout(() => carregarUltimoRegistro(), 1000);
   } catch (e) {
-    console.error("Erro enviarRegistroTurma:", e);
-    statusEl.textContent = "❌ Erro ao enviar: " + e.message;
+    console.error(e);
+    statusEl.textContent = "❌ Erro.";
     statusEl.className = "status-msg erro show";
-    statusEl.style.display = "block";
   }
 }
 
-// ===== CARREGAR ÚLTIMO REGISTRO COM VALIDAÇÃO =====
+// ===== ÚLTIMO REGISTRO =====
 async function carregarUltimoRegistro() {
   const container = document.getElementById("ultimaRegistroContainer");
   const areaAvaliacao = document.getElementById("areaAvaliacao");
   const jaAvaliou = document.getElementById("jaavalidou");
   
   if (!container || !areaAvaliacao || !jaAvaliou) return;
-  
-  container.innerHTML = "<p class='muted'>Carregando último registro...</p>";
+  container.innerHTML = "<p class='muted'>Carregando...</p>";
   areaAvaliacao.style.display = "none";
   jaAvaliou.style.display = "none";
-  
   if (!usuarioAtual) return;
   
   try {
     const q = query(collection(db, "registros_turma"), orderBy("data", "desc"), limit(1));
     const snap = await getDocs(q);
-    
-    if (snap.empty) {
-      container.innerHTML = "<p class='muted'>Nenhum registro de turma encontrado.</p>";
-      return;
-    }
+    if (snap.empty) { container.innerHTML = "<p class='muted'>Nenhum registro.</p>"; return; }
     
     const d = snap.docs[0];
     const val = d.data();
     const id = d.id;
-    
-    // Verificar se este aluno já avaliou este registro
     const avalSnap = await getDocs(collection(db, "registros_turma", id, "avaliacoes"));
     let jaAvaliouEste = false;
     let media = null;
     
-    avalSnap.forEach(a => {
-      const ad = a.data();
-      if (ad.uid === usuarioAtual.uid) {
-        jaAvaliouEste = true;
-      }
-    });
-    
-    // Calcular média
+    avalSnap.forEach(a => { const ad = a.data(); if (ad.uid === usuarioAtual.uid) jaAvaliouEste = true; });
     if (!avalSnap.empty) {
-      let soma = 0;
-      let cnt = 0;
-      avalSnap.forEach(a => { 
-        const ad = a.data(); 
-        if (ad.nota != null) { 
-          soma += Number(ad.nota); 
-          cnt++; 
-        } 
-      });
+      let soma = 0; let cnt = 0;
+      avalSnap.forEach(a => { const ad = a.data(); if (ad.nota != null) { soma += Number(ad.nota); cnt++; } });
       if (cnt) media = (soma / cnt).toFixed(1);
     }
     
     container.innerHTML = `
       <div class="registro">
-        <strong style="color:#1b5e20; font-size:16px;">Turma: ${val.turma} ${val.representante ? "(representante reportou)" : ""}</strong>
-        <div class="meta">📅 ${formatDate(val.data)} • Por: ${val.nome || "-"}</div>
+        <strong style="color:#1b5e20; font-size:16px;">Turma: ${val.turma}</strong>
+        <div class="meta">📅 ${formatDate(val.data)} • ${val.nome}</div>
         <div style="margin-top:12px; color:#555; line-height:1.6;">${(val.trabalho || "").replace(/\n/g, "<br>")}</div>
-        <div class="meta" style="margin-top:12px; background:#f0fdf4; padding:8px; border-radius:6px;">
-          📊 Avaliações: ${avalSnap.size} • ⭐ Média: ${media !== null ? media : "-"}
-        </div>
+        <div class="meta" style="margin-top:12px; background:#f0fdf4; padding:8px; border-radius:6px;">📊 Avaliações: ${avalSnap.size} • ⭐ Média: ${media || "-"}</div>
       </div>
     `;
     
-    // Mostrar área apropriada
-    if (jaAvaliouEste) {
-      areaAvaliacao.style.display = "none";
-      jaAvaliou.style.display = "block";
-    } else {
-      areaAvaliacao.style.display = "block";
-      jaAvaliou.style.display = "none";
-      areaAvaliacao.dataset.registroId = id;
-    }
-  } catch (e) {
-    console.error("Erro carregarUltimoRegistro:", e);
-    container.innerHTML = "<p class='muted'>Erro ao carregar último registro.</p>";
-  }
+    if (jaAvaliouEste) { jaAvaliou.style.display = "block"; } 
+    else { areaAvaliacao.style.display = "block"; areaAvaliacao.dataset.registroId = id; }
+  } catch (e) { console.error(e); container.innerHTML = "<p class='muted'>Erro.</p>"; }
 }
 
-// ===== ENVIAR AVALIAÇÃO =====
 async function enviarAvaliacaoUltimo() {
   const areaAvaliacao = document.getElementById("areaAvaliacao");
   const registroId = areaAvaliacao ? areaAvaliacao.dataset.registroId : null;
   const nota = Number(document.getElementById("notaInput").value);
   const feedback = document.getElementById("feedbackUltimo").value.trim();
   const status = document.getElementById("statusAvaliacao");
-  
   status.style.display = "none";
   
-  if (!registroId) { 
-    alert("Nenhum registro disponível para avaliar."); 
-    return; 
-  }
-  
-  if (isNaN(nota) || nota < 0 || nota > 10) {
-    status.textContent = "⚠️ Informe uma nota de 0 a 10.";
+  if (!registroId || isNaN(nota) || nota < 0 || nota > 10 || !feedback || !usuarioAtual) {
+    status.textContent = "⚠️ Preecha todos os campos corretamente.";
     status.className = "status-msg erro show";
     status.style.display = "block";
     return;
   }
   
-  if (!feedback) {
-    status.textContent = "⚠️ Escreva um feedback.";
-    status.className = "status-msg erro show";
-    status.style.display = "block";
-    return;
-  }
-  
-  if (!usuarioAtual) { 
-    alert("Faça login para avaliar."); 
-    return; 
-  }
-  
-  status.textContent = "Enviando avaliação...";
+  status.textContent = "Enviando...";
   status.className = "status-msg show";
   status.style.display = "block";
   
   try {
-    await addDoc(collection(db, "registros_turma", registroId, "avaliacoes"), {
-      uid: usuarioAtual.uid,
-      nome: usuarioAtual.displayName || usuarioAtual.email,
-      nota,
-      feedback,
-      data: new Date()
-    });
-    
-    status.textContent = "✅ Avaliação enviada com sucesso!";
+    await addDoc(collection(db, "registros_turma", registroId, "avaliacoes"), { uid: usuarioAtual.uid, nome: usuarioAtual.email, nota, feedback, data: new Date() });
+    status.textContent = "✅ Avaliação enviada!";
     status.className = "status-msg sucesso show";
-    status.style.display = "block";
-    
     document.getElementById("notaInput").value = "";
     document.getElementById("feedbackUltimo").value = "";
-    
-    setTimeout(() => {
-      carregarUltimoRegistro();
-    }, 1000);
-  } catch (e) {
-    console.error("Erro enviarAvaliacaoUltimo:", e);
-    status.textContent = "❌ Erro ao enviar avaliação: " + e.message;
-    status.className = "status-msg erro show";
-    status.style.display = "block";
-  }
+    setTimeout(() => carregarUltimoRegistro(), 1000);
+  } catch (e) { console.error(e); status.textContent = "❌ Erro."; status.className = "status-msg erro show"; }
 }
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btnEnviarRegistro") enviarRegistroTurma();
+  if (e.target && e.target.id === "btnEnviarAvaliacao") enviarAvaliacaoUltimo();
+});
 
 // ===== NAVEGAÇÃO =====
 window.mudarPagina = function(pagina) {
   document.querySelectorAll(".pagina").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".menu-btn").forEach(el => el.classList.remove("active"));
-  
   const paginaEl = document.getElementById(pagina);
   if (paginaEl) paginaEl.classList.add("active");
-  
   if (event && event.target) event.target.classList.add("active");
   
   if (pagina === "dashboard") carregarSensores();
@@ -487,19 +605,6 @@ window.mudarPagina = function(pagina) {
   if (pagina === "projeto") carregarProjeto();
 }
 
-// ===== EVENT LISTENERS =====
-document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "btnEnviarRegistro") {
-    e.preventDefault();
-    enviarRegistroTurma();
-  }
-  if (e.target && e.target.id === "btnEnviarAvaliacao") {
-    e.preventDefault();
-    enviarAvaliacaoUltimo();
-  }
-});
-
-// Carregar dados iniciais após autenticação
 window.addEventListener("load", () => {
   if (usuarioAtual) {
     carregarSensores();

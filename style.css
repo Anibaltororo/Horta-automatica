@@ -360,6 +360,52 @@ body {
   box-sizing: border-box;
 }
 
+/* ==== BOTÃO REAÇÃO (avisos) ==== */
+.btn-reacao {
+  background: #fff;
+  border: 1px solid #d0e8d8;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-reacao:hover {
+  background: #f0fdf4;
+  border-color: #2e8b57;
+  transform: scale(1.05);
+}
+
+.btn-reacao span {
+  font-weight: 700;
+  color: #666;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ==== MODAL CURSO ==== */
+#modalCurso {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#modalCurso > div {
+  animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* responsividade */
 @media (max-width: 720px) {
   .cards-sensor { gap: 8px; }
